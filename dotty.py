@@ -19,30 +19,28 @@ from __future__ import print_function
 import json
 import os
 import shutil
-from sys import stderr
+import sys
 import argparse
 
-# Fix Python 2.x.
+# Fix Python 2.x
 try: input = raw_input
 except NameError: pass
+
+run_command = lambda command: os.system(command)
 
 def ask_user(prompt):
     valid = {"yes":True, 'y':True, '':True, "no":False, 'n':False}
     while True:
         print("{0} ".format(prompt),end="")
         choice = input().lower()
-        if choice in valid:
-            return valid[choice]
-        else:
-            print("Enter a correct choice.", file=stderr)
-
+        if choice in valid: return valid[choice]
+        else: print("Enter a correct choice.", file=sys.stderr)
 
 def create_directory(path):
     exp = os.path.expanduser(path)
     if (not os.path.isdir(exp)):
         print("{0} doesnt exist, creating.".format(exp))
         os.makedirs(exp)
-
 
 def create_symlink(src, dest, replace):
     dest = os.path.expanduser(dest)
@@ -53,15 +51,11 @@ def create_symlink(src, dest, replace):
             print("Skipping existing {0} -> {1}".format(dest, src))
             return
         elif replace or ask_user("{0} exists, delete it? [Y/n]".format(dest)):
-            if os.path.isfile(dest) or broken_symlink or os.path.islink(dest):
-                os.remove(dest)
-            else:
-                shutil.rmtree(dest)
-        else:
-            return
+            if os.path.isfile(dest) or broken_symlink or os.path.islink(dest): os.remove(dest)
+            else: shutil.rmtree(dest)
+        else: return
     print("Linking {0} -> {1}".format(dest, src))
-    try:
-        os.symlink(src, dest)
+    try: os.symlink(src, dest)
     except AttributeError:
         import ctypes
         symlink = ctypes.windll.kernel32.CreateSymbolicLinkW
@@ -70,38 +64,27 @@ def create_symlink(src, dest, replace):
         flags = 1 if os.path.isdir(src) else 0
         symlink(dest, src, flags)
 
-
 def copy_path(src, dest):
     dest = os.path.expanduser(dest)
     src = os.path.abspath(src)
     if os.path.exists(dest):
         if ask_user("{0} exists, delete it? [Y/n]".format(dest)):
-            if os.path.isfile(dest) or os.path.islink(dest):
-                os.remove(dest)
-            else:
-                shutil.rmtree(dest)
-        else:
-            return
+            if os.path.isfile(dest) or os.path.islink(dest): os.remove(dest)
+            else: shutil.rmtree(dest)
+        else: return
     print("Copying {0} -> {1}".format(src, dest))
-    if os.path.isfile(src):
-        shutil.copy(src, dest)
-    else:
-        shutil.copytree(src, dest)
-
-
-def run_command(command):
-    os.system(command)
-
+    if os.path.isfile(src): shutil.copy(src, dest)
+    else: shutil.copytree(src, dest)
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("config", help="the JSON file you want to use")
-    parser.add_argument("-r", "--replace", action="store_true",
-                        help="replace files/folders if they already exist")
+    parser.add_argument("-r", "--replace", action="store_true", help="replace files/folders if they already exist")
+    parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories  are backed up to the directory the config file is in")
     args = parser.parse_args()
     js = json.load(open(args.config))
     os.chdir(os.path.expanduser(os.path.abspath(os.path.dirname(args.config))))
-
+    if args.backup: [copy_path(dst, src) for src, dst in js['copy'].items()] or sys.exit(0)
     if 'directories' in js: [create_directory(path) for path in js['directories']]
     if 'link' in js: [create_symlink(src, dst, args.replace) for src, dst in js['link'].items()]
     if 'copy' in js: [copy_path(src, dst) for src, dst in js['copy'].items()]
@@ -111,5 +94,4 @@ def main():
     if 'commands' in js: [run_command(command) for command in js['commands']]
     print("Done!")
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()
