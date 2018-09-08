@@ -101,14 +101,19 @@ def remove_path(path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("config", help="the JSON file you want to use")
-    parser.add_argument("-R", "--replace", action="store_true", help="do not prompt user: replace files/folders if they already exist")
+    parser.add_argument("-f", "--force",   action="store_true", help="\033[1mdoes not prompt user\033[0m: replace files/folders if they already exist, removing previous directory tree")
     parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
-    parser.add_argument("-c", "--clear",   action="store_true", help="clears the config directory before anything, removing all files listed in it [TODO]")
+    parser.add_argument("-c", "--clear",   action="store_true", help="clears the config directory before anything, removing all files listed in it")
     parser.add_argument("-r", "--restore", action="store_true", help="restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)")
+    parser.add_argument("-e", "--eject",   metavar='LOCATION',  help="run --clear and move config folder to another location (thank hoberto) [TODO]")
+    parser.add_argument("-d", "--dryrun",  action="store_true", help="perform a dry run, outputting what changes would have been made if this argument was removed [TODO]")
     args = parser.parse_args()
     prompt_user = not args.replace
     js = json.load(open(args.config))
     chdir_config(args.config)
+    if args.eject:
+        print('TO BE IMPLEMENTED')
+        return 
     if args.clear:
         [remove_path(src) for src, _ in js['copy'].items()]
     if args.backup: 

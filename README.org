@@ -53,15 +53,19 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
   
 * Usage
   #+BEGIN_SRC sh
-    usage: dotty.py [-h] [-r] [-b] config
+    usage: dotty.py [-h] [-R] [-b] [-c] [-r] [-e] config
 
     positional arguments:
       config         the JSON file you want to use
 
     optional arguments:
       -h, --help     show this help message and exit
-      -r, --replace  replace files/folders if they already exist
+      -R, --replace  replace files/folders if they already exist
       -b, --backup   run copy in reverse so that files and directories are backed up to the directory the config file is in
-      -c, --clear    remove files listed in the copy section of config file from config directory
-      -e, --eject    run --clear and move config folder to another location (thank hoberto)
+      -c, --clear    clears the config directory before anything, removing all files listed in it
+      -r, --restore  restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)
+      -e, --eject    run --clear and move config folder to another location (thank hoberto) [TODO] 
   #+END_SRC 
+
+* TODO
+  Create eject command
