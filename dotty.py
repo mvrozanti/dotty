@@ -28,12 +28,12 @@ import code
 try: input = raw_input
 except NameError: pass
 
-chdir_config = lambda config: os.chdir(os.path.expanduser(os.path.abspath(os.path.dirname(config))))
+chdir_dotfiles = lambda config: os.chdir(os.path.dirname(os.path.expanduser(os.path.abspath(os.path.dirname(config)))))
 prompt_user = True
 dry_run = False
 
 def run_command(command, chdir2config=None):
-    if chdir2config: chdir_config(chdir2config)
+    if chdir2config: chdir_dotfiles(chdir2config)
     os.system(command)
 
 def ask_user(prompt):
@@ -112,8 +112,8 @@ def main():
     parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in", default=True)
     parser.add_argument("-c", "--clear",   action="store_true", help="clears the config directory before anything, removing all files listed in it")
     parser.add_argument("-r", "--restore", action="store_true", help="restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)")
-    parser.add_argument("-e", "--eject",   metavar='LOCATION',  help="run --clear and move config folder to another location (thank hoberto) [TODO]")
     parser.add_argument("-d", "--dryrun",  action="store_true", help="perform a dry run, outputting what changes would have been made if this argument was removed [TODO]")
+    parser.add_argument("-e", "--eject",   metavar='LOCATION',  help="run --clear and move config folder to another location (thank hoberto) [TODO]")
     args = parser.parse_args()
     prompt_user = not args.force
     if not args.config: # look in parent directory of this script
@@ -125,7 +125,7 @@ def main():
                print('Found dotty configuration')
     if args.config is None: raise Exception('JSON config file is missing, add it to this script\'s folder')
     js = json.load(open(args.config))
-    chdir_config(args.config) 
+    chdir_dotfiles(args.config) 
     if args.clear or args.eject:
         [remove_path(src) for src, _ in js['copy'].items()]
     if args.eject:
@@ -139,7 +139,7 @@ def main():
         if 'copy' in js: [copy_path(src, dst) for src, dst in js['copy'].items()]
         if 'install' in js and 'install_cmd' in js:
             packages = ' '.join(js['install'])
-            run_command("{0} {1}".format(js['install_cmd'], packages), chdir2config=chdir_config)
+            run_command("{0} {1}".format(js['install_cmd'], packages), chdir2config=chdir_dotfiles)
         if 'commands' in js: [run_command(command) for command in js['commands']]
     print("Done")
 
