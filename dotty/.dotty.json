@@ -1,0 +1,68 @@
+{
+    "install_cmd" : "pacman -Syu",
+    "install" : [
+        "compton",
+        "curl",
+        "gvim",
+        "gdmap",
+        "lolcat",
+        "jupyter",
+        "mpd",
+        "mpv",
+        "netbeans",
+        "python-pywal",
+        "ranger",
+        "rxvt-unicode",
+        "scrot",
+        "sxiv",
+        "screenfetch",
+        "tig",
+        "tmux",
+        "tree",
+        "ufw",
+        "unclutter",
+        "unp",
+        "urlview",
+        "xclip",
+        "youtube-dl",
+        "zsh"
+    ],
+    "copy" : {
+        ".config/powerline" : "~/.config/powerline",
+        ".config/ncmpcpp" : "~/.config/.ncmpcpp",
+        ".config/i3" : "~/.config/i3",
+        ".config/ranger" : "~/.config/ranger",
+
+        ".tmux" : "~/.tmux/",
+        ".netbeans" : "~/.netbeans",
+        ".urxvt" : "~/.urxvt/",
+
+        ".tmux.conf" : "~/.tmux.conf",
+        ".Xdefaults" : "~/.Xdefaults",
+        ".bash_aliases" : "~/.bash_aliases",
+        ".nexor.ascii" : "~/nexor.ascii",
+        ".mpd.conf" : "~/nexor.ascii",
+        ".vimrc" : "~/.vimrc",
+        ".gdmap" : "~/.gdmap",
+
+        "usr-local-bin/gitai" : "/usr/local/bin/gitai",
+        "usr-local-bin/gitap" : "/usr/local/bin/gitap",
+        "usr-local-bin/gitundo" : "/usr/local/bin/gitundo",
+        "usr-local-bin/re" : "/usr/local/bin/re",
+        "usr-local-bin/make-ranger-aliases" : "/usr/local/bin/make-ranger-aliases",
+        "usr-local-bin/pipes" : "/usr/local/bin/pipes",
+        "usr-local-bin/ytdl" : "/usr/local/bin/ytdl"
+    },
+    "commands": [
+        "mkdir -p ~/util/ && cd $_ && git clone https://github.com/danielchatfield/trello-desktop",
+        "mkdir -p ~/util/ && cd $_ && git clone https://github.com/emcrisostomo/fswatch",
+        "mkdir -p ~/util/ && cd $_ && git clone https://github.com/jesseduffield/lazygit",
+
+        "mkdir ~/Downloads && wget '$(curl -s 'https://www.waterfoxproject.org/en-US/waterfox/new/?scene=1' | re '(https://storage-waterfox.netdna-ssl.com/releases/linux64/installer/waterfox-\\d+.\\d+.\\d+.en-US.linux-x86_64.tar.bz2)' | head -n1) -O ~/Downloads/waterfox-latest.tar.bz2 && cd ~/Downloads && unp -U waterfox-latest.tar.bz2 && cd waterfox* && ln -s $(realpath waterfox) /usr/local/bin/waterfox",
+
+        "mkdir ~/Downloads && wget https://telegram.org/dl/desktop/linux -O ~/Downloads/telegram-latest.tar.xz && cd ~/Downloads && unp -U telegram-latest.tar.xz && cd Telegram && ln -s $(realpath Telegram) /usr/local/bin/telegram",
+
+        "pip3 install --user maybe "
+    ]
+
+}

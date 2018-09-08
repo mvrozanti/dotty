@@ -60,9 +60,9 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
       -h, --help            show this help message and exit
       --config *dotty*.json
                             the JSON file you want to use, it's only required if
-                            filename doesnt end in json or doesn't contain dotty
+                            filename doesn't end in json or doesn't contain dotty
                             in the basename
-      -f, --force           does not prompt user: replace files/folders if
+      -f, --force           [1mdoes not prompt user[0m: replace files/folders if
                             they already exist, removing previous directory tree
       -b, --backup          run copy in reverse so that files and directories are
                             backed up to the directory the config file is in
