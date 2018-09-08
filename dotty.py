@@ -22,7 +22,6 @@ import shutil
 import sys
 import argparse
 import errno
-import code
 
 # Fix Python 2.x
 try: input = raw_input
@@ -37,7 +36,7 @@ def run_command(command, chdir2config=None):
 
 def ask_user(prompt):
     valid = {'yes':True, 'y':True, '':True, 'no':False, 'n':False}
-    valid_always = {'A': True, 'a':True}
+    valid_always = {'all': True, 'a':True}
     while True:
         print('{0} '.format(prompt),end='')
         choice = input().lower()
@@ -79,10 +78,7 @@ def copy_path(src, dst, backup=False):
     dst = os.path.expanduser(dst) if not backup else os.path.abspath(dst)
     src = os.path.abspath(src) if not backup else os.path.expanduser(src)
     if os.path.exists(dst):
-        if prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(dst)):
-            if os.path.isfile(dst) or os.path.islink(dst): os.remove(dst)
-            else: shutil.rmtree(dst)
-        else: return 
+        if not remove_path(dst): return 
     print("Copying {0} -> {1}".format(src, dst))
     if os.path.isfile(src): 
         try: shutil.copy(src, dst) 
@@ -94,27 +90,37 @@ def copy_path(src, dst, backup=False):
         try: shutil.copytree(src, dst)
         except: pass
 
+def remove_path(path):
+    path = os.path.abspath(path)
+    if prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(path)):
+        if os.path.isfile(path) or os.path.islink(path): os.remove(path)
+        else: shutil.rmtree(path)
+        return True
+    else: return False
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("config", help="the JSON file you want to use")
-    parser.add_argument("-r", "--replace", action="store_true", help="replace files/folders if they already exist")
+    parser.add_argument("-R", "--replace", action="store_true", help="do not prompt user: replace files/folders if they already exist")
     parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
-    parser.add_argument("-c", "--clear",   action="store_true", help="clears the config directory, removing all files listed in it [TODO]")
+    parser.add_argument("-c", "--clear",   action="store_true", help="clears the config directory before anything, removing all files listed in it [TODO]")
+    parser.add_argument("-r", "--restore", action="store_true", help="restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)")
     args = parser.parse_args()
     prompt_user = not args.replace
     js = json.load(open(args.config))
     chdir_config(args.config)
+    if args.clear:
+        [remove_path(src) for src, _ in js['copy'].items()]
     if args.backup: 
         [copy_path(src, dst, backup=True) for dst, src in js['copy'].items()] 
-        print('Backup finished')
-        return
-    if 'create_directories' in js: [create_directory(path) for path in js['directories']]
-    if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
-    if 'copy' in js: [copy_path(src, dst) for src, dst in js['copy'].items()]
-    if 'install' in js and 'install_cmd' in js:
-        packages = ' '.join(js['install'])
-        run_command("{0} {1}".format(js['install_cmd'], packages), chdir2config=chdir_config)
-    if 'commands' in js: [run_command(command) for command in js['commands']]
+    if args.restore: 
+        if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
+        if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
+        if 'copy' in js: [copy_path(src, dst) for src, dst in js['copy'].items()]
+        if 'install' in js and 'install_cmd' in js:
+            packages = ' '.join(js['install'])
+            run_command("{0} {1}".format(js['install_cmd'], packages), chdir2config=chdir_config)
+        if 'commands' in js: [run_command(command) for command in js['commands']]
     print("Done")
 
 if __name__ == "__main__": main()

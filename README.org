@@ -25,7 +25,7 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
 * Example
   #+BEGIN_SRC javascript
     {
-        "directories": ["~/emacs.d"],
+        "mkdirs": ["~/emacs.d"],
         
         "link": {
             "source": "dest",
