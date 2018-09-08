@@ -21,23 +21,30 @@ import os
 import shutil
 import sys
 import argparse
+import errno
+import code
 
 # Fix Python 2.x
 try: input = raw_input
 except NameError: pass
 
-chdir_config = lambda: os.chdir(os.path.expanduser(os.path.abspath(os.path.dirname(args.config))))
+chdir_config = lambda config: os.chdir(os.path.expanduser(os.path.abspath(os.path.dirname(config))))
+prompt_user = True
 
-def run_command(command, chdir2config=True):
-    if chdir2config: chdir_config()
+def run_command(command, chdir2config=None):
+    if chdir2config: chdir_config(chdir2config)
     os.system(command)
 
 def ask_user(prompt):
-    valid = {"yes":True, 'y':True, '':True, "no":False, 'n':False}
+    valid = {'yes':True, 'y':True, '':True, 'no':False, 'n':False}
+    valid_always = {'A': True, 'a':True}
     while True:
-        print("{0} ".format(prompt),end="")
+        print('{0} '.format(prompt),end='')
         choice = input().lower()
         if choice in valid: return valid[choice]
+        if choice in valid_always:
+            prompt_user = False
+            return True
         else: print("Enter a correct choice.", file=sys.stderr)
 
 def create_directory(path):
@@ -46,39 +53,44 @@ def create_directory(path):
         print("{0} doesnt exist, creating.".format(exp))
         os.makedirs(exp)
 
-def create_symlink(src, dest, replace):
-    dest = os.path.expanduser(dest)
+def create_symlink(src, dst):
+    dst = os.path.expanduser(dst)
     src = os.path.abspath(src)
-    broken_symlink = os.path.lexists(dest) and not os.path.exists(dest)
-    if os.path.lexists(dest):
-        if os.path.islink(dest) and os.readlink(dest) == src:
-            print("Skipping existing {0} -> {1}".format(dest, src))
+    broken_symlink = os.path.lexists(dst) and not os.path.exists(dst)
+    if os.path.lexists(dst):
+        if os.path.islink(dst) and os.readlink(dst) == src:
+            print("Skipping existing {0} -> {1}".format(dst, src))
             return
-        elif replace or ask_user("{0} exists, delete it? [Y/n]".format(dest)):
-            if os.path.isfile(dest) or broken_symlink or os.path.islink(dest): os.remove(dest)
-            else: shutil.rmtree(dest)
+        elif prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(dst)):
+            if os.path.isfile(dst) or broken_symlink or os.path.islink(dst): os.remove(dst)
+            else: shutil.rmtree(dst)
         else: return
-    print("Linking {0} -> {1}".format(dest, src))
-    try: os.symlink(src, dest)
+    print("Linking {0} -> {1}".format(dst, src))
+    try: os.symlink(src, dst)
     except AttributeError:
         import ctypes
         symlink = ctypes.windll.kernel32.CreateSymbolicLinkW
         symlink.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32)
         symlink.restype = ctypes.c_ubyte
         flags = 1 if os.path.isdir(src) else 0
-        symlink(dest, src, flags)
+        symlink(dst, src, flags)
 
-def copy_path(src, dest):
-    dest = os.path.expanduser(dest)
-    src = os.path.abspath(src)
-    if os.path.exists(dest):
-        if ask_user("{0} exists, delete it? [Y/n]".format(dest)):
-            if os.path.isfile(dest) or os.path.islink(dest): os.remove(dest)
-            else: shutil.rmtree(dest)
+def copy_path(src, dst, backup=False):
+    dst = os.path.expanduser(dst) if not backup else os.path.abspath(dst)
+    src = os.path.abspath(src) if not backup else os.path.expanduser(src)
+    if os.path.exists(dst):
+        if prompt_user and ask_user("{0} exists, delete it? [Y/a/n]".format(dst)):
+            if os.path.isfile(dst) or os.path.islink(dst): os.remove(dst)
+            else: shutil.rmtree(dst)
         else: return
-    print("Copying {0} -> {1}".format(src, dest))
-    if os.path.isfile(src): shutil.copy(src, dest)
-    else: shutil.copytree(src, dest)
+    print("Copying {0} -> {1}".format(src, dst))
+    if os.path.isfile(src): 
+        try: shutil.copy(src, dst) 
+        except IOError as e:
+            if e.errno != errno.ENOENT: raise
+            os.makedirs(os.path.dirname(dst))
+            shutil.copy(src, dst) 
+    else: shutil.copytree(src, dst)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -86,16 +98,20 @@ def main():
     parser.add_argument("-r", "--replace", action="store_true", help="replace files/folders if they already exist")
     parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
     args = parser.parse_args()
+    prompt_user = not parser.replace
     js = json.load(open(args.config))
-    chdir_config()
-    if args.backup: [copy_path(dst, src) for src, dst in js['copy'].items()] or sys.exit(0)
-    if 'directories' in js: [create_directory(path) for path in js['directories']]
-    if 'link' in js: [create_symlink(src, dst, args.replace) for src, dst in js['link'].items()]
+    chdir_config(args.config)
+    if args.backup: 
+        print('Backup finished')
+        [copy_path(src, dst, backup=True) for dst, src in js['copy'].items()] 
+        return
+    if 'create_directories' in js: [create_directory(path) for path in js['directories']]
+    if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
     if 'copy' in js: [copy_path(src, dst) for src, dst in js['copy'].items()]
     if 'install' in js and 'install_cmd' in js:
         packages = ' '.join(js['install'])
-        run_command("{0} {1}".format(js['install_cmd'], packages))
+        run_command("{0} {1}".format(js['install_cmd'], packages), chdir2config=chdir_config)
     if 'commands' in js: [run_command(command) for command in js['commands']]
-    print("Done!")
+    print("Done")
 
 if __name__ == "__main__": main()
