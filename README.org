@@ -66,7 +66,7 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
       -d, --dryrun   perform a dry run, outputting what changes would have been made if this argument was removed [TODO]
   #+END_SRC 
 
-* TODO
+* Todo
  Implement eject command
  Implement dryrun command
  Check if any file listed in config is missing and warn user before trying to operate on them
