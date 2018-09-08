@@ -80,7 +80,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("config", help="the JSON file you want to use")
     parser.add_argument("-r", "--replace", action="store_true", help="replace files/folders if they already exist")
-    parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories  are backed up to the directory the config file is in")
+    parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
     args = parser.parse_args()
     js = json.load(open(args.config))
     os.chdir(os.path.expanduser(os.path.abspath(os.path.dirname(args.config))))

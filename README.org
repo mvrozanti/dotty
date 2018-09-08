@@ -53,7 +53,7 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
   
 * Usage
   #+BEGIN_SRC sh
-    usage: dotty.py [-h] [-r] config
+    usage: dotty.py [-h] [-r] [-b] config
 
     positional arguments:
       config         the JSON file you want to use
@@ -61,4 +61,5 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
     optional arguments:
       -h, --help     show this help message and exit
       -r, --replace  replace files/folders if they already exist
+      -b, --backup   run copy in reverse so that files and directories are backed up to the directory the config file is in
   #+END_SRC 
