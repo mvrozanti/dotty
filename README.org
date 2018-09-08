@@ -25,7 +25,7 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
 * Example
   #+BEGIN_SRC javascript
     {
-        "mkdirs": ["~/emacs.d"],
+        "mkdirs": ["~/.vim"],
         
         "link": {
             "source": "dest",
@@ -53,19 +53,21 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
   
 * Usage
   #+BEGIN_SRC sh
-    usage: dotty.py [-h] [-R] [-b] [-c] [-r] [-e] config
-
-    positional arguments:
-      config         the JSON file you want to use
+    usage: dotty.py [-h] [-f] [-b] [-c] [-r] [-e] [-d] [config]
 
     optional arguments:
+      --config         the JSON file you want to use
       -h, --help     show this help message and exit
-      -R, --replace  replace files/folders if they already exist
+      -f, --force  replace files/folders if they already exist
       -b, --backup   run copy in reverse so that files and directories are backed up to the directory the config file is in
       -c, --clear    clears the config directory before anything, removing all files listed in it
       -r, --restore  restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)
       -e, --eject    run --clear and move config folder to another location (thank hoberto) [TODO] 
+      -d, --dryrun   perform a dry run, outputting what changes would have been made if this argument was removed [TODO]
   #+END_SRC 
 
 * TODO
-  Create eject command
+  Implement eject command
+  Implement dryrun command
+  Check if any file listed in config is missing and warn user before trying to operate on them
+  

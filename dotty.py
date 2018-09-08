@@ -22,6 +22,7 @@ import shutil
 import sys
 import argparse
 import errno
+import code
 
 # Fix Python 2.x
 try: input = raw_input
@@ -29,6 +30,7 @@ except NameError: pass
 
 chdir_config = lambda config: os.chdir(os.path.expanduser(os.path.abspath(os.path.dirname(config))))
 prompt_user = True
+dry_run = False
 
 def run_command(command, chdir2config=None):
     if chdir2config: chdir_config(chdir2config)
@@ -98,24 +100,37 @@ def remove_path(path):
         return True
     else: return False
 
+def move(src, dst):
+    dst = os.path.abspath(dst)
+    if os.path.exists(dst) and remove_path(dst): shutil.move(src,dst)
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("config", help="the JSON file you want to use")
+    parser.add_argument("--config", metavar='*dotty*.json',       help="the JSON file you want to use, \n\
+            it's only required if filename doesn't end in json or doesn't contain dotty in the basename", required=False)
     parser.add_argument("-f", "--force",   action="store_true", help="\033[1mdoes not prompt user\033[0m: replace files/folders if they already exist, removing previous directory tree")
-    parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
+    parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in", default=True)
     parser.add_argument("-c", "--clear",   action="store_true", help="clears the config directory before anything, removing all files listed in it")
     parser.add_argument("-r", "--restore", action="store_true", help="restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)")
     parser.add_argument("-e", "--eject",   metavar='LOCATION',  help="run --clear and move config folder to another location (thank hoberto) [TODO]")
     parser.add_argument("-d", "--dryrun",  action="store_true", help="perform a dry run, outputting what changes would have been made if this argument was removed [TODO]")
     args = parser.parse_args()
-    prompt_user = not args.replace
+    prompt_user = not args.force
+    if not args.config: # look in parent directory of this script
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        for f in os.listdir(dir_path):
+            basename = os.path.basename(f)
+            if all(name in basename for name in ['dotty','json']): 
+               args.config = os.path.join(dir_path, f)
+               print('Found dotty configuration')
+    if args.config is None: raise Exception('JSON config file is missing, add it to this script\'s folder')
     js = json.load(open(args.config))
-    chdir_config(args.config)
+    chdir_config(args.config) 
+    if args.clear or args.eject:
+        [remove_path(src) for src, _ in js['copy'].items()]
     if args.eject:
         print('TO BE IMPLEMENTED')
         return 
-    if args.clear:
-        [remove_path(src) for src, _ in js['copy'].items()]
     if args.backup: 
         [copy_path(src, dst, backup=True) for dst, src in js['copy'].items()] 
     if args.restore: 
