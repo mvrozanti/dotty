@@ -132,7 +132,13 @@ def main():
         for f in os.listdir(op.join(op.dirname(args.config), os.pardir)):
             if not any(name in op.basename(f) for name in ['dotty','.git']): remove_path(f)
     if args.eject:
-        print('TO BE IMPLEMENTED')
+        chdir_dotfiles(args.config)
+        args.eject = op.expanduser(args.eject)
+        if not op.exists(args.eject): 
+            print('{0} does not exist. Would you like to create it? [Y/n]'.format(args.eject))
+            if input().lower() in ['y', 'yes']: os.mkdirs(args.eject)
+            else: raise Exception('Was unable to eject') 
+        for f in os.listdir(os.getcwd()): move(f, args.eject)
         return 
     if args.backup: 
         [copy_path(src, dst, backup=True) for dst, src in js['copy'].items()] 
