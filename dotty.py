@@ -26,7 +26,11 @@ import argparse
 try: input = raw_input
 except NameError: pass
 
-run_command = lambda command: os.system(command)
+chdir_config = lambda: os.chdir(os.path.expanduser(os.path.abspath(os.path.dirname(args.config))))
+
+def run_command(command, chdir2config=True):
+    if chdir2config: chdir_config()
+    os.system(command)
 
 def ask_user(prompt):
     valid = {"yes":True, 'y':True, '':True, "no":False, 'n':False}
@@ -83,7 +87,7 @@ def main():
     parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
     args = parser.parse_args()
     js = json.load(open(args.config))
-    os.chdir(os.path.expanduser(os.path.abspath(os.path.dirname(args.config))))
+    chdir_config()
     if args.backup: [copy_path(dst, src) for src, dst in js['copy'].items()] or sys.exit(0)
     if 'directories' in js: [create_directory(path) for path in js['directories']]
     if 'link' in js: [create_symlink(src, dst, args.replace) for src, dst in js['link'].items()]
