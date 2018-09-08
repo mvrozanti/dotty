@@ -79,18 +79,20 @@ def copy_path(src, dst, backup=False):
     dst = os.path.expanduser(dst) if not backup else os.path.abspath(dst)
     src = os.path.abspath(src) if not backup else os.path.expanduser(src)
     if os.path.exists(dst):
-        if prompt_user and ask_user("{0} exists, delete it? [Y/a/n]".format(dst)):
+        if prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(dst)):
             if os.path.isfile(dst) or os.path.islink(dst): os.remove(dst)
             else: shutil.rmtree(dst)
-        else: return
+        else: return 
     print("Copying {0} -> {1}".format(src, dst))
     if os.path.isfile(src): 
         try: shutil.copy(src, dst) 
-        except IOError as e:
-            if e.errno != errno.ENOENT: raise
+        except Exception as e:
+            if e.errno not in [errno.ENOENT, errno.ENXIO]: raise
             os.makedirs(os.path.dirname(dst))
             shutil.copy(src, dst) 
-    else: shutil.copytree(src, dst)
+    else: 
+        try: shutil.copytree(src, dst)
+        except: pass
 
 def main():
     parser = argparse.ArgumentParser()
@@ -98,12 +100,12 @@ def main():
     parser.add_argument("-r", "--replace", action="store_true", help="replace files/folders if they already exist")
     parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
     args = parser.parse_args()
-    prompt_user = not parser.replace
+    prompt_user = not args.replace
     js = json.load(open(args.config))
     chdir_config(args.config)
     if args.backup: 
-        print('Backup finished')
         [copy_path(src, dst, backup=True) for dst, src in js['copy'].items()] 
+        print('Backup finished')
         return
     if 'create_directories' in js: [create_directory(path) for path in js['directories']]
     if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
