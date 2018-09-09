@@ -1,15 +1,14 @@
 ## Dotty is script for syncing and managing  versions of your dotfiles.
 
 ### Usage
-<a href="https://asciinema.org/a/200410" target="_blank"><img src="https://asciinema.org/a/200410.png" /></a>
-
+[![asciicast](https://asciinema.org/a/200410.png)](https://asciinema.org/a/200410)
 
 ### Installation:
   Add dotty to your dotfiles' git repository:
   
     cd ~/your-dotfiles-folder
     git submodule add https://github.com/mvrozanti/dotty
-    git submodule update --remote dotty`
+    git submodule update --remote dotty
 
 You're done!
   
