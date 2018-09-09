@@ -54,20 +54,31 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
   
 * Usage
   #+BEGIN_SRC sh
-    usage: dotty.py [-h] [--config *dotty*.json] [-f] [-b] [-c] [-r] [-d] [-e LOCATION]
+usage: dotty.py [-h] [--config *dotty*.json] [-f] [-b] [-c] [-r] [-d] [-s]
+                [-e LOCATION]
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      --config *dotty*.json
-                            the JSON file you want to use, it's only required if
-                            filename doesnt end in json or doesn't contain dotty in the basename
-      -f, --force           does not prompt user: replace files/folders if they already exist, removing previous directory tree
-      -b, --backup          run copy in reverse so that files and directories are backed up to the directory the config file is in
-      -c, --clear           clears the config directory before anything, removing all files listed in it
-      -r, --restore         restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)
-      -d, --dryrun          perform a dry run, outputting what changes would have been made if this argument was removed [TODO]
-      -e LOCATION, --eject LOCATION
-                            run --clear and move config folder to another location (thank hoberto) [TODO]
+optional arguments:
+  -h, --help            show this help message and exit
+  --config *dotty*.json
+                        the JSON file you want to use, it's only required if
+                        filename doesn't end in json or doesn't contain dotty
+                        in the basename
+  -f, --force           [1mdo not prompt user[0m: replace files/folders if
+                        they already exist, removing previous directory tree
+  -b, --backup          run copy in reverse so that files and directories are
+                        backed up to the directory the config file is in
+  -c, --clear           clears the config directory before anything, removing
+                        all files listed in it
+  -r, --restore         restore all elements to system (mkdirs, link, copy,
+                        install(install_cmd), commands)
+  -d, --dryrun          perform a dry run, outputting what changes would have
+                        been made if this argument was removed [TODO]
+  -s, --sync            perform action --backup, commits changes and pushes to
+                        the dotfiles remote repository (must already be set
+                        up) and then --clear
+  -e LOCATION, --eject LOCATION
+                        run --clear and move config folder to another location
+                        (thank hoberto)
   #+END_SRC 
 
 * Todo
