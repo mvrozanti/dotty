@@ -22,7 +22,8 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
   Dotty uses a JSON-formatted config located on the local dotty repository.
   Currently, dotty can create/check with ~mkdirs~, ~link~ or ~copy~ files/directories, ~install~ packages and execute shell ~commands~. 
 
-* Example (make sure to remove comment)
+* Example
+  (make sure to remove comment)
   #+BEGIN_SRC javascript
     {
         "mkdirs": ["~/.vim"],
