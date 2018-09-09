@@ -22,7 +22,6 @@ import shutil
 import sys
 import argparse
 import errno
-import code
 import os.path as op
 
 # Fix Python 2.x
@@ -104,7 +103,6 @@ def remove_path(path):
 
 def move(src, dst):
     dst = op.abspath(dst)
-    code.interact(local=locals())
     doit = lambda: shutil.move(src,dst) 
     if op.exists(dst):
         if remove_path(dst): doit()
