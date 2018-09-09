@@ -23,6 +23,7 @@ import sys
 import argparse
 import errno
 import os.path as op
+import code
 
 # Fix Python 2.x
 try: input = raw_input
@@ -33,8 +34,8 @@ chdir_dotfiles = lambda config: os.chdir(
 prompt_user = True
 dry_run = False
 
-def run_command(command, chdir2config=None):
-    if chdir2config: chdir_dotfiles(chdir2config)
+def run_command(command, chdir2dot=None):
+    if chdir2dot: chdir_dotfiles(chdir2dot)
     os.system(command)
 
 def ask_user(prompt): # this could have less lines
@@ -86,7 +87,9 @@ def copy_path(src, dst, backup=False):
     if op.isfile(src): 
         try: shutil.copy(src, dst) 
         except Exception as e:
-            if e.errno not in [errno.ENOENT, errno.ENXIO]: raise
+            if e.errno not in [errno.ENOENT, errno.ENXIO]: 
+                code.interact(local=locals())
+                raise
             os.makedirs(op.dirname(dst))
             shutil.copy(src, dst) 
     else: 
@@ -101,23 +104,16 @@ def remove_path(path):
         return True
     else: return False
 
-def move(src, dst):
-    dst = op.abspath(dst)
-    doit = lambda: shutil.move(src,dst) 
-    if op.exists(dst):
-        if remove_path(dst): doit()
-    else: doit()
-            
-
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", metavar='*dotty*.json',       help="the JSON file you want to use, \n\
+    parser.add_argument("--config", metavar='*dotty*.json',     help="the JSON file you want to use, \n\
             it's only required if filename doesn't end in json or doesn't contain dotty in the basename", required=False)
-    parser.add_argument("-f", "--force",   action="store_true", help="\033[1mdoes not prompt user\033[0m: replace files/folders if they already exist, removing previous directory tree")
-    parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in", default=len(sys.argv) > 2)
+    parser.add_argument("-f", "--force",   action="store_true", help="\033[1mdo not prompt user\033[0m: replace files/folders if they already exist, removing previous directory tree")
+    parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
     parser.add_argument("-c", "--clear",   action="store_true", help="clears the config directory before anything, removing all files listed in it")
     parser.add_argument("-r", "--restore", action="store_true", help="restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)")
     parser.add_argument("-d", "--dryrun",  action="store_true", help="perform a dry run, outputting what changes would have been made if this argument was removed [TODO]")
+    parser.add_argument("-s", "--sync",    action='store_true', help="perform action --backup, commits changes and pushes to the dotfiles remote repository (must already be set up) and then --clear")
     parser.add_argument("-e", "--eject",   metavar='LOCATION',  help="run --clear and move config folder to another location (thank hoberto)")
     args = parser.parse_args()
     origin_dir = os.getcwd()
@@ -132,30 +128,38 @@ def main():
     if args.config is None: raise Exception('JSON config file is missing, add it to this script\'s folder')
     js = json.load(open(args.config))
     chdir_dotfiles(args.config) 
-    if args.clear or args.eject:
-        for f in os.listdir(op.join(op.dirname(args.config), os.pardir)):
-            if not any(name in op.basename(f) for name in ['dotty','.git']): remove_path(f)
+    def clear_dotfiles(force=False):
+        if force  or input('This is about to clear the dotfiles directory, are you sure you want to proceed? [y/N] ')[0] == 'y':
+            chdir_dotfiles(args.config) 
+            for f in os.listdir(op.join(op.dirname(args.config), os.pardir)):
+                if not any(name == op.basename(f) for name in ['dotty','.git', '.gitmodules']): remove_path(f)
+    if args.clear or args.eject: clear_dotfiles()
     if args.eject:
-        os.chdir(origin_dir)
+        op.chdir(origin_dir)
         if not op.exists(args.eject): 
             args.eject = op.realpath(args.eject)
             print('{0} does not exist. Would you like to create it? [Y/n]'.format(args.eject))
             if input().lower() in ['y', 'yes', '']: os.makedirs(args.eject)
             else: raise Exception('Unable to eject') 
         if op.exists(args.eject) and op.isdir(args.eject):
-            for f in os.listdir(os.getcwd()):
-                if 'test' not in op.basename(f): shutil.move(op.realpath(f), args.eject)
-        return 
-    if args.backup: 
-        [copy_path(src, dst, backup=True) for dst, src in js['copy'].items()] 
-    if args.restore: 
+            for f in os.listdir(os.getcwd()): shutil.move(op.realpath(f), args.eject)
+    if args.backup or args.sync and 'copy' in js: [copy_path(src, dst, backup=True) for dst, src in js['copy'].items()] 
+    if args.restore and ['copy'] in js:
         if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
         if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
         if 'copy' in js: [copy_path(src, dst) for src, dst in js['copy'].items()]
         if 'install' in js and 'install_cmd' in js:
             packages = ' '.join(js['install'])
-            run_command("{0} {1}".format(js['install_cmd'], packages), chdir2config=chdir_dotfiles)
+            run_command("{0} {1}".format(js['install_cmd'], packages), chdir2dot=chdir_dotfiles)
         if 'commands' in js: [run_command(command) for command in js['commands']]
+    if args.sync and 'copy' in js:
+        chdir_dotfiles(args.config)
+        run_command('git add .')
+        commit_message = ''
+        if not args.force: commit_message = input('Please enter commit message for this change:\n')
+        run_command('git commit -m "{0}"'.format(commit_message))
+        run_command('git push')
+        clear_dotfiles(force=True)
     print("Done")
 
 if __name__ == "__main__": main()
