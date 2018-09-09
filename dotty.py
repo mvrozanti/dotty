@@ -38,7 +38,7 @@ def run_command(command, chdir2config=None):
     if chdir2config: chdir_dotfiles(chdir2config)
     os.system(command)
 
-def ask_user(prompt):
+def ask_user(prompt): # this could have less lines
     valid = {'yes':True, 'y':True, '':True, 'no':False, 'n':False}
     valid_always = {'all': True, 'a':True}
     while True:
@@ -104,7 +104,12 @@ def remove_path(path):
 
 def move(src, dst):
     dst = op.abspath(dst)
-    if op.exists(dst) and remove_path(dst): shutil.move(src,dst)
+    code.interact(local=locals())
+    doit = lambda: shutil.move(src,dst) 
+    if op.exists(dst):
+        if remove_path(dst): doit()
+    else: doit()
+            
 
 def main():
     parser = argparse.ArgumentParser()
@@ -115,8 +120,9 @@ def main():
     parser.add_argument("-c", "--clear",   action="store_true", help="clears the config directory before anything, removing all files listed in it")
     parser.add_argument("-r", "--restore", action="store_true", help="restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)")
     parser.add_argument("-d", "--dryrun",  action="store_true", help="perform a dry run, outputting what changes would have been made if this argument was removed [TODO]")
-    parser.add_argument("-e", "--eject",   metavar='LOCATION',  help="run --clear and move config folder to another location (thank hoberto) [TODO]")
+    parser.add_argument("-e", "--eject",   metavar='LOCATION',  help="run --clear and move config folder to another location (thank hoberto)")
     args = parser.parse_args()
+    origin_dir = os.getcwd()
     prompt_user = not args.force
     if not args.config: # look in parent directory of this script
         dir_path = op.dirname(op.realpath(__file__))
@@ -132,13 +138,15 @@ def main():
         for f in os.listdir(op.join(op.dirname(args.config), os.pardir)):
             if not any(name in op.basename(f) for name in ['dotty','.git']): remove_path(f)
     if args.eject:
-        chdir_dotfiles(args.config)
-        args.eject = op.expanduser(args.eject)
+        os.chdir(origin_dir)
         if not op.exists(args.eject): 
+            args.eject = op.realpath(args.eject)
             print('{0} does not exist. Would you like to create it? [Y/n]'.format(args.eject))
-            if input().lower() in ['y', 'yes']: os.mkdirs(args.eject)
-            else: raise Exception('Was unable to eject') 
-        for f in os.listdir(os.getcwd()): move(f, args.eject)
+            if input().lower() in ['y', 'yes', '']: os.makedirs(args.eject)
+            else: raise Exception('Unable to eject') 
+        if op.exists(args.eject) and op.isdir(args.eject):
+            for f in os.listdir(os.getcwd()):
+                if 'test' not in op.basename(f): shutil.move(op.realpath(f), args.eject)
         return 
     if args.backup: 
         [copy_path(src, dst, backup=True) for dst, src in js['copy'].items()] 

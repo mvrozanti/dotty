@@ -22,7 +22,7 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
   Dotty uses a JSON-formatted config located on the local dotty repository.
   Currently, dotty can create/check with ~mkdirs~, ~link~ or ~copy~ files/directories, ~install~ packages and execute shell ~commands~. 
 
-* Example
+* Example (make sure to remove comment)
   #+BEGIN_SRC javascript
     {
         "mkdirs": ["~/.vim"],
@@ -53,33 +53,23 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
   
 * Usage
   #+BEGIN_SRC sh
-    usage: dotty.py [-h] [--config *dotty*.json] [-f] [-b] [-c] [-r] [-d]
-                    [-e LOCATION]
+    usage: dotty.py [-h] [--config *dotty*.json] [-f] [-b] [-c] [-r] [-d] [-e LOCATION]
 
     optional arguments:
       -h, --help            show this help message and exit
       --config *dotty*.json
                             the JSON file you want to use, it's only required if
-                            filename doesnt end in json or doesn't contain dotty
-                            in the basename
-      -f, --force           does not prompt user: replace files/folders if
-                            they already exist, removing previous directory tree
-      -b, --backup          run copy in reverse so that files and directories are
-                            backed up to the directory the config file is in
-      -c, --clear           clears the config directory before anything, removing
-                            all files listed in it
-      -r, --restore         restore all elements to system (mkdirs, link, copy,
-                            install(install_cmd), commands)
-      -d, --dryrun          perform a dry run, outputting what changes would have
-                            been made if this argument was removed [TODO]
+                            filename doesnt end in json or doesn't contain dotty in the basename
+      -f, --force           does not prompt user: replace files/folders if they already exist, removing previous directory tree
+      -b, --backup          run copy in reverse so that files and directories are backed up to the directory the config file is in
+      -c, --clear           clears the config directory before anything, removing all files listed in it
+      -r, --restore         restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)
+      -d, --dryrun          perform a dry run, outputting what changes would have been made if this argument was removed [TODO]
       -e LOCATION, --eject LOCATION
-                            run --clear and move config folder to another location
-                            (thank hoberto) [TODO]
+                            run --clear and move config folder to another location (thank hoberto) [TODO]
   #+END_SRC 
 
 * Todo
- Implement eject command.
-
  Implement dryrun command.
 
  Check if any file listed in config are missing and warn user before trying to operate on them.
