@@ -23,14 +23,12 @@ import sys
 import argparse
 import errno
 import os.path as op
-import code
 
 # Fix Python 2.x
 try: input = raw_input
 except NameError: pass
 
-chdir_dotfiles = lambda config: os.chdir(
-            op.join(op.expanduser(op.dirname(config)), os.pardir))
+chdir_dotfiles = lambda config: os.chdir(op.join(op.dirname(config), os.pardir))
 prompt_user = True
 dry_run = False
 
@@ -87,9 +85,7 @@ def copy_path(src, dst, backup=False):
     if op.isfile(src): 
         try: shutil.copy(src, dst) 
         except Exception as e:
-            if e.errno not in [errno.ENOENT, errno.ENXIO]: 
-                code.interact(local=locals())
-                raise
+            if e.errno not in [errno.ENOENT, errno.ENXIO]: raise
             os.makedirs(op.dirname(dst))
             shutil.copy(src, dst) 
     else: 
@@ -108,13 +104,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", metavar='*dotty*.json',     help="the JSON file you want to use, \n\
             it's only required if filename doesn't end in json or doesn't contain dotty in the basename", required=False)
-    parser.add_argument("-f", "--force",   action="store_true", help="\033[1mdo not prompt user\033[0m: replace files/folders if they already exist, removing previous directory tree")
-    parser.add_argument("-b", "--backup",  action="store_true", help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
-    parser.add_argument("-c", "--clear",   action="store_true", help="clears the config directory before anything, removing all files listed in it")
-    parser.add_argument("-r", "--restore", action="store_true", help="restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)")
-    parser.add_argument("-d", "--dryrun",  action="store_true", help="perform a dry run, outputting what changes would have been made if this argument was removed [TODO]")
-    parser.add_argument("-s", "--sync",    action='store_true', help="perform action --backup, commits changes and pushes to the dotfiles remote repository (must already be set up) and then --clear")
-    parser.add_argument("-e", "--eject",   metavar='LOCATION',  help="run --clear and move config folder to another location (thank hoberto)")
+    parser.add_argument("-f", "--force",   action='store_true', help="\033[1mdo not prompt user\033[0m: replace files/folders if they already exist, removing previous directory tree")
+    parser.add_argument("-b", "--backup",  action='store_true', help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
+    parser.add_argument("-c", "--clear",   action='store_true', help="clears the config directory before anything, removing all files listed in it")
+    parser.add_argument("-r", "--restore", action='store_true', help="restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)")
+    parser.add_argument("-d", "--dryrun",  action='store_true', help="perform a dry run, outputting what changes would have been made if this argument was removed [TODO]")
+    parser.add_argument("-s", "--sync",    nargs='*',           help="perform action --backup, commits changes and pushes to the dotfiles remote repository (must already be set up) and then --clear")
+    parser.add_argument("-e", "--eject",   metavar='LOCATION',  help="run --clear and move contents of dotfiles folder to another folder (thank hoberto)")
+    parser.add_argument("-i", "--inspect", action='store_true', help="show differences between the last commit and the one before that [TODO]")
     args = parser.parse_args()
     origin_dir = os.getcwd()
     prompt_user = not args.force
@@ -133,7 +130,7 @@ def main():
             chdir_dotfiles(args.config) 
             for f in os.listdir(op.join(op.dirname(args.config), os.pardir)):
                 if not any(name == op.basename(f) for name in ['dotty','.git', '.gitmodules']): remove_path(f)
-    if args.clear or args.eject: clear_dotfiles()
+    if args.clear or args.eject: clear_dotfiles(force=False)
     if args.eject:
         op.chdir(origin_dir)
         if not op.exists(args.eject): 
@@ -152,14 +149,15 @@ def main():
             packages = ' '.join(js['install'])
             run_command("{0} {1}".format(js['install_cmd'], packages), chdir2dot=chdir_dotfiles)
         if 'commands' in js: [run_command(command) for command in js['commands']]
-    if args.sync and 'copy' in js:
+    if args.sync is not None and 'copy' in js:
         chdir_dotfiles(args.config)
         run_command('git add .')
-        commit_message = ''
-        if not args.force: commit_message = input('Please enter commit message for this change:\n')
+        commit_message = ' '.join(args.sync)
+        if not args.force and not commit_message: commit_message = input('Please enter commit message for this change: ')
         run_command('git commit -m "{0}"'.format(commit_message))
+        run_command('git diff HEAD^ HEAD')
         run_command('git push')
         clear_dotfiles(force=True)
-    print("Done")
+    if args.inspect: chdir_dotfiles(args.config)
 
 if __name__ == "__main__": main()

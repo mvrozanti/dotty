@@ -1,6 +1,7 @@
 {
     "install_cmd" : "pacman -Syu",
     "install" : [
+        "calcurse",
         "compton",
         "curl",
         "gvim",
@@ -11,6 +12,7 @@
         "mpd",
         "mpv",
         "netbeans",
+        "ntp",
         "python-pywal",
         "ranger",
         "rxvt-unicode",
@@ -35,7 +37,6 @@
         ".config/ranger" : "~/.config/ranger",
 
         ".tmux" : "~/.tmux/",
-        ".netbeans" : "~/.netbeans",
         ".urxvt" : "~/.urxvt/",
 
         ".tmux.conf" : "~/.tmux.conf",
