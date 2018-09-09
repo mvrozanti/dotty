@@ -12,7 +12,7 @@ Dotty is a little python script for syncing dotfiles stored on your git repo.
 * Installation:
   Add dotty to your dotfiles git repository:
   
-  ~git submodule add https://github.com/vibhavp/dotty~
+  ~git submodule add https://github.com/mvrozanti/dotty~
   
   To Update dotty to the latest version:
   
