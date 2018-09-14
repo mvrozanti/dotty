@@ -156,7 +156,7 @@ def main():
         if not args.force and not commit_message: commit_message = input('Please enter commit message for this change: ')
         run_command('git commit -m "{0}"'.format(commit_message))
         run_command('git diff HEAD^ HEAD')
-        run_command('git push')
+        run_command('git push {0}'.format('-f' if args.force else ''))
         clear_dotfiles(force=True)
     if args.inspect: chdir_dotfiles(args.config)
 
