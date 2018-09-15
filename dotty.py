@@ -129,7 +129,7 @@ def main():
         if force  or input('This is about to clear the dotfiles directory, are you sure you want to proceed? [y/N] ')[0] == 'y':
             chdir_dotfiles(args.config) 
             for f in os.listdir(op.join(op.dirname(args.config), os.pardir)):
-                if not any(name == op.basename(f) for name in ['dotty','.git', '.gitmodules']): remove_path(f)
+                if not any(name in op.basename(f) for name in ['dotty','.git', '.git', 'README']): remove_path(f)
     if args.clear or args.eject: clear_dotfiles(force=False)
     if args.eject:
         op.chdir(origin_dir)
