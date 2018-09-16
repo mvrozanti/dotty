@@ -28,9 +28,9 @@ import os.path as op
 try: input = raw_input
 except NameError: pass
 
-chdir_dotfiles = lambda config: os.chdir(op.join(op.dirname(config), os.pardir))
-prompt_user = True
-dry_run = False
+SAFE_NAMES = ['dotty','.git', '.git', 'README'] # maybe this should be part of config?
+chdir_dotfiles = lambda config: os.chdir(op.dirname(config))
+prompt_user, dry_run = True, False
 
 def run_command(command, chdir2dot=None):
     if chdir2dot: chdir_dotfiles(chdir2dot)
@@ -76,7 +76,7 @@ def create_symlink(src, dst):
         flags = 1 if op.isdir(src) else 0
         symlink(dst, src, flags)
 
-def copy_path(src, dst, backup=False):
+def copypath(src, dst, backup=False):
     dst = op.expanduser(dst) if not backup else op.abspath(dst)
     src = op.abspath(src) if not backup else op.expanduser(src)
     if op.exists(dst):
@@ -116,20 +116,22 @@ def main():
     origin_dir = os.getcwd()
     prompt_user = not args.force
     if not args.config: # look in parent directory of this script
-        dir_path = op.dirname(op.realpath(__file__))
+        dir_path = op.abspath(op.join(op.dirname(op.realpath(__file__)), op.pardir))
         for f in os.listdir(dir_path):
             basename = op.basename(f)
             if all(name in basename for name in ['dotty','json']): 
                args.config = op.join(dir_path, f)
-               print('Found dotty configuration')
+               print('Found dotty configuration at {}'.format(args.config))
     if args.config is None: raise Exception('JSON config file is missing, add it to this script\'s folder')
     js = json.load(open(args.config))
     chdir_dotfiles(args.config) 
     def clear_dotfiles(force=False):
-        if force  or input('This is about to clear the dotfiles directory, are you sure you want to proceed? [y/N] ')[0] == 'y':
+        if force  or input('This is about to clear the dotfiles directory, are you sure you want to proceed? [y/N] ') == 'y':
             chdir_dotfiles(args.config) 
-            for f in os.listdir(op.join(op.dirname(args.config), os.pardir)):
-                if not any(name in op.basename(f) for name in ['dotty','.git', '.git', 'README']): remove_path(f)
+            dotfiles_dir = op.dirname(args.config)
+            for f in [op.abspath(f) for f in os.listdir(dotfiles_dir)]:
+                if not any(name in op.basename(f) for name in SAFE_NAMES): remove_path(op.abspath(f))
+        else: return 
     if args.clear or args.eject: clear_dotfiles(force=False)
     if args.eject:
         op.chdir(origin_dir)
@@ -140,14 +142,12 @@ def main():
             else: raise Exception('Unable to eject') 
         if op.exists(args.eject) and op.isdir(args.eject):
             for f in os.listdir(os.getcwd()): shutil.move(op.realpath(f), args.eject)
-    if args.backup or args.sync and 'copy' in js: [copy_path(src, dst, backup=True) for dst, src in js['copy'].items()] 
+    if args.backup or args.sync is not None and 'copy' in js: [copypath(src, dst, backup=True) for dst, src in js['copy'].items()] 
     if args.restore and ['copy'] in js:
         if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
         if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
-        if 'copy' in js: [copy_path(src, dst) for src, dst in js['copy'].items()]
-        if 'install' in js and 'install_cmd' in js:
-            packages = ' '.join(js['install'])
-            run_command("{0} {1}".format(js['install_cmd'], packages), chdir2dot=chdir_dotfiles)
+        if 'copy' in js: [copypath(src, dst) for src, dst in js['copy'].items()]
+        if 'install' in js and 'install_cmd' in js: run_command("{0} {1}".format(js['install_cmd'], ' '.join(js['install'])), chdir2dot=chdir_dotfiles)
         if 'commands' in js: [run_command(command) for command in js['commands']]
     if args.sync is not None and 'copy' in js:
         chdir_dotfiles(args.config)
