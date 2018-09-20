@@ -15,9 +15,9 @@ You're done!
   Dotty uses a JSON-formatted config located on the dotty repository directory.
   Currently, dotty can create/check with `mkdirs`, `link` or `copy` files/directories, `install` packages and execute shell `commands`.
 
-  It is also capable of automatically pushing your changes to your dotfiles to a repository server like GitHub.
+  It is also capable of automatically pushing changes made to your dotfiles to remote repositories with the `-s` or `--sync` flag.
 
-  Most importantly, it can also restore the dotfiles to their respective locations on the target file system. That is, You can take your files *and* your configurations anywhere, while backing it up remotely if desired.
+  Most importantly, it can also restore the dotfiles to their respective locations on the target file system. That is, you can take your files *and* your configurations anywhere, while backing it up remotely if desired.
 
 
 ### Features
