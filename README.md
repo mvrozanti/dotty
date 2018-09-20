@@ -21,9 +21,9 @@ You're done!
 
 
 ### Features
-    - Link-following
-    - Wildcard in `copy` paths
-    - Dry runs
+- Link-following
+- Wildcard in `copy` paths
+- Dry runs
 
 ### Parameters: 
   
