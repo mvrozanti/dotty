@@ -2,24 +2,26 @@
     "mkdirs": ["~/.vim"],
     
     "link": {
-        "source": "dest",
+        "<file in dotfiles folder>": "<file in filesystem>",
         "zshrc": "~/.zshrc",
-
-        "emacs/lisp/": "~/.emacs.d/lisp"
+        "emacs/lisp/": "~/.emacs.d/lisp",
+        "/mnt/1ADE1465DE134C17/or/another/external/drive": "~/external-drive"
     },
 
     "copy": {
-        "source": "dest",
-        "offlineimaprc": "~/.offlineimaprc"
+        "<file in dotfiles folder>": "<file in filesystem>",
+        ".vimrc": "~/.vimrc",
+        ".config/": "~/.config/*conf"
     },
 
-    "install_cmd": "pacaur -Syu",
+    "install_cmd": "apt-get install",
     "install": [
         "zsh",
-        "emacs"
+        "firefox",
+        "vim"
     ],
 		
     "commands": [
-        "emacs -batch -Q -l ~/.emacs.d/firstrun.el"
+        "git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim && vim +PluginInstall +qall"
     ]
 }

@@ -6,8 +6,8 @@
 ### Installation:
   Add dotty to your dotfiles' git repository:
   
-    cd ~/your-dotfiles-folder 
-    git submodule add https://github.com/mvrozanti/dotty;git submodule update --remote dotty
+    cd ~/chosen-dotfiles-folder; [[ -f .git ]] || git init
+    git submodule add https://github.com/mvrozanti/dotty; git submodule update --remote dotty
 
 You're done!
   
@@ -19,32 +19,10 @@ You're done!
 
   Most importantly, it can also restore the dotfiles to their respective locations on the target file system. That is, You can take your files *and* your configurations anywhere, while backing it up remotely if desired.
 
-  Sample configuration:
 
-    {
-        "mkdirs": ["~/.vim"],
-        
-        "link": {
-            "source": "dest",
-            "zshrc": "~/.zshrc"
-            "emacs/lisp/": "~/.emacs.d/lisp"
-        },
-
-        "copy": {
-            "source": "dest",
-            "offlineimaprc": "~/.offlineimaprc"
-        },
-
-        "install_cmd": "pacaur -Syu",
-        "install": [
-            "zsh",
-            "emacs"
-        ],
-		
-        "commands": [
-            "emacs -batch -Q -l ~/.emacs.d/firstrun.el"
-        ]
-    }
+### Features
+    - Link-following
+    - Wildcards in `copy` paths
 
 ### Arguments: 
   
@@ -77,3 +55,33 @@ You're done!
  Check if any file listed in config are missing and warn user before trying to operate on them.
 
  Implement mutually exclusive arguments.
+
+### Sample configuration:
+
+    {
+        "mkdirs": ["~/.vim"],
+        
+        "link": {
+            "<file in dotfiles folder>": "<file in filesystem>",
+            "zshrc": "~/.zshrc",
+            "emacs/lisp/": "~/.emacs.d/lisp",
+            "/mnt/1ADE1465DE134C17/or/another/external/drive": "~/external-drive"
+        },
+
+        "copy": {
+            "<file in dotfiles folder>": "<file in filesystem>",
+            ".vimrc": "~/.vimrc",
+            ".config/": "~/.config/*conf"
+        },
+
+        "install_cmd": "apt-get install",
+        "install": [
+            "zsh",
+            "firefox",
+            "vim"
+        ],
+            
+        "commands": [
+            "git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim && vim +PluginInstall +qall"
+        ]
+    }

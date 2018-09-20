@@ -23,6 +23,8 @@ import sys
 import argparse
 import errno
 import os.path as op
+import glob
+import code
 
 # Fix Python 2.x
 try: input = raw_input
@@ -79,8 +81,10 @@ def create_symlink(src, dst):
 def copypath(src, dst, backup=False):
     dst = op.expanduser(dst) if not backup else op.abspath(dst)
     src = op.abspath(src) if not backup else op.expanduser(src)
-    if op.exists(dst):
-        if not remove_path(dst): return 
+    if '*' in src: 
+        [copypath(path, dst, backup=backup) for path in glob.glob(src)]
+        return 
+    if op.exists(dst) and not remove_path(dst): return 
     print("Copying {0} -> {1}".format(src, dst))
     if op.isfile(src): 
         try: shutil.copy(src, dst) 
