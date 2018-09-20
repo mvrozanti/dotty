@@ -52,11 +52,11 @@ You're done!
                             (thank hoberto)
 ### To be implemented:
 
- Check if any file listed in config are missing and warn user before trying to operate on them
+ - Check if any file listed in config are missing and warn user before trying to operate on them
 
- Mutually exclusive arguments
+ - Mutually exclusive arguments
 
- No-op file configuration (exclude certain paths that match unix shell-style wildcards) under "noop" key
+ - No-op file configuration (exclude certain paths that match unix shell-style wildcards) under "noop" key
 
 ### Sample configuration:
 
