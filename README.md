@@ -22,7 +22,7 @@ You're done!
 
 ### Features
 - Link-following
-- Wildcard in `copy` paths
+- Unix shell-style wildcards in `copy` paths
 - Dry runs
 
 ### Parameters: 
