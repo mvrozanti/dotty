@@ -24,19 +24,19 @@ import argparse
 import errno
 import os.path as op
 import glob
-import code
 
-# Fix Python 2.x
-try: input = raw_input
+try: input = raw_input # Fix Python 2.x
 except NameError: pass
 
 SAFE_NAMES = ['dotty','.git', '.git', 'README'] # maybe this should be part of config?
 chdir_dotfiles = lambda config: os.chdir(op.dirname(config))
 prompt_user, dry_run = True, False
+dry_run_events = []
 
 def run_command(command, chdir2dot=None):
     if chdir2dot: chdir_dotfiles(chdir2dot)
-    os.system(command)
+    if dry_run: dry_run_events.append(command) 
+    else: os.system(command)
 
 def ask_user(prompt): # this could have less lines
     valid = {'yes':True, 'y':True, '':True, 'no':False, 'n':False}
@@ -52,6 +52,9 @@ def ask_user(prompt): # this could have less lines
 
 def create_directory(path):
     exp = op.expanduser(path)
+    if dry_run: 
+        dry_run_events.append('mkdir: {0}'.format(exp)) 
+        return 
     if (not op.isdir(exp)):
         print("{0} doesnt exist, creating.".format(exp))
         os.makedirs(exp)
@@ -62,13 +65,18 @@ def create_symlink(src, dst):
     broken_symlink = op.lexists(dst) and not op.exists(dst)
     if op.lexists(dst):
         if op.islink(dst) and os.readlink(dst) == src:
-            print("Skipping existing {0} -> {1}".format(dst, src))
+            if not dry_run: print("Skipping existing {0} -> {1}".format(dst, src))
             return
-        elif prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(dst)):
-            if op.isfile(dst) or broken_symlink or op.islink(dst): os.remove(dst)
-            else: shutil.rmtree(dst)
+        elif dry_run or prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(dst)):
+            if dry_run: dry_run_events.append('remove: {0}'.format(dst))
+            else:
+                if op.isfile(dst) or broken_symlink or op.islink(dst): os.remove(dst)
+                else: shutil.rmtree(dst)
         else: return
-    print("Linking {0} -> {1}".format(dst, src))
+    if not dry_run: print("Linking {0} -> {1}".format(dst, src))
+    if dry_run: 
+        dry_run_events.append('symlink: {0} -> {1}'.format(src, dst)) 
+        return 
     try: os.symlink(src, dst)
     except AttributeError:
         import ctypes
@@ -85,7 +93,10 @@ def copypath(src, dst, backup=False):
         [copypath(path, dst, backup=backup) for path in glob.glob(src)]
         return 
     if op.exists(dst) and not remove_path(dst): return 
-    print("Copying {0} -> {1}".format(src, dst))
+    if dry_run: 
+        dry_run_events.append('copy: {0} -> {1}'.format(src, dst)) 
+        return 
+    else: print("Copying {0} -> {1}".format(src, dst))
     if op.isfile(src): 
         try: shutil.copy(src, dst) 
         except Exception as e:
@@ -98,13 +109,17 @@ def copypath(src, dst, backup=False):
 
 def remove_path(path):
     path = op.abspath(path)
-    if prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(path)):
+    if dry_run: 
+        dry_run_events.append('remove: {0}'.format(path)) 
+        return 
+    if not prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(path)):
         if op.isfile(path) or op.islink(path): os.remove(path)
         else: shutil.rmtree(path)
         return True
     else: return False
 
 def main():
+    global dry_run,prompt_user
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", metavar='*dotty*.json',     help="the JSON file you want to use, \n\
             it's only required if filename doesn't end in json or doesn't contain dotty in the basename", required=False)
@@ -112,12 +127,13 @@ def main():
     parser.add_argument("-b", "--backup",  action='store_true', help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
     parser.add_argument("-c", "--clear",   action='store_true', help="clears the config directory before anything, removing all files listed in it")
     parser.add_argument("-r", "--restore", action='store_true', help="restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)")
-    parser.add_argument("-d", "--dryrun",  action='store_true', help="perform a dry run, outputting what changes would have been made if this argument was removed [TODO]")
+    parser.add_argument("-d", "--dry-run", action='store_true', help="perform a dry run, outputting what changes would have been made if this argument was removed [TODO]")
     parser.add_argument("-s", "--sync",    nargs='*',           help="perform action --backup, commits changes and pushes to the dotfiles remote repository (must already be set up) and then --clear", metavar='commit message')
     parser.add_argument("-e", "--eject",   metavar='LOCATION',  help="run --clear and move contents of dotfiles folder to another folder (thank hoberto)")
     parser.add_argument("-i", "--inspect", action='store_true', help="show differences between the last commit and the one before that [TODO]")
     args = parser.parse_args()
     origin_dir = os.getcwd()
+    dry_run = args.dry_run
     prompt_user = not args.force
     if not args.config: # look in parent directory of this script
         dir_path = op.abspath(op.join(op.dirname(op.realpath(__file__)), op.pardir))
@@ -157,11 +173,13 @@ def main():
         chdir_dotfiles(args.config)
         run_command('git add .')
         commit_message = ' '.join(args.sync)
-        if not args.force and not commit_message: commit_message = input('Please enter commit message for this change: ')
+        if not dry_run and not args.force and not commit_message: commit_message = input('Please enter commit message for this change: ')
         run_command('git commit -m "{0}"'.format(commit_message))
         run_command('git diff HEAD^ HEAD')
         run_command('git push {0}'.format('-f' if args.force else ''))
         clear_dotfiles(force=True)
+    if args.dry_run: 
+        for evt in dry_run_events: print(evt)
     if args.inspect: chdir_dotfiles(args.config)
 
 if __name__ == "__main__": main()

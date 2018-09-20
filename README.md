@@ -22,9 +22,10 @@ You're done!
 
 ### Features
     - Link-following
-    - Wildcards in `copy` paths
+    - Wildcard in `copy` paths
+    - Dry runs
 
-### Arguments: 
+### Parameters: 
   
     usage: dotty.py [-h] [--config *dotty*.json] [-f] [-b] [-c] [-r] [-d] [-s] [-e LOCATION]
     optional arguments:
@@ -33,7 +34,7 @@ You're done!
                             the JSON file you want to use, it's only required if
                             filename doesn't end in json or doesn't contain dotty
                             in the basename
-      -f, --force           [1mdo not prompt user[0m: replace files/folders if
+      -f, --force           do not prompt user: replace files/folders if
                             they already exist, removing previous directory tree
       -b, --backup          run copy in reverse so that files and directories are
                             backed up to the directory the config file is in
@@ -42,7 +43,7 @@ You're done!
       -r, --restore         restore all elements to system (mkdirs, link, copy,
                             install(install_cmd), commands)
       -d, --dryrun          perform a dry run, outputting what changes would have
-                            been made if this argument was removed [TODO]
+                            been made if this argument was removed
       -s, --sync            perform action --backup, commits changes and pushes to
                             the dotfiles remote repository (must already be set
                             up) and then --clear
@@ -50,11 +51,10 @@ You're done!
                             run --clear and move config folder to another location
                             (thank hoberto)
 ### To be implemented:
- Implement dryrun command.
 
- Check if any file listed in config are missing and warn user before trying to operate on them.
+ Check if any file listed in config are missing and warn user before trying to operate on them
 
- Implement mutually exclusive arguments.
+ Mutually exclusive arguments
 
 ### Sample configuration:
 
@@ -77,6 +77,7 @@ You're done!
         "install_cmd": "apt-get install",
         "install": [
             "zsh",
+            "eclipse",
             "firefox",
             "vim"
         ],
