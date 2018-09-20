@@ -56,6 +56,8 @@ You're done!
 
  Mutually exclusive arguments
 
+ No-op file configuration (exclude certain paths that match unix shell-style wildcards) under "noop" key
+
 ### Sample configuration:
 
     {
