@@ -107,12 +107,12 @@ def copypath(src, dst, backup=False):
         try: shutil.copytree(src, dst)
         except: pass
 
-def remove_path(path):
+def remove_path(path, force=False):
     path = op.abspath(path)
     if dry_run: 
         dry_run_events.append('remove: {0}'.format(path)) 
         return 
-    if not prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(path)):
+    if force or not prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(path)):
         if op.isfile(path) or op.islink(path): os.remove(path)
         else: shutil.rmtree(path)
         return True
@@ -150,7 +150,7 @@ def main():
             chdir_dotfiles(args.config) 
             dotfiles_dir = op.dirname(args.config)
             for f in [op.abspath(f) for f in os.listdir(dotfiles_dir)]:
-                if not any(name in op.basename(f) for name in SAFE_NAMES): remove_path(op.abspath(f))
+                if not any(name in op.basename(f) for name in SAFE_NAMES): remove_path(op.abspath(f), force=force)
         else: return 
     if args.clear or args.eject: clear_dotfiles(force=False)
     if args.eject:
