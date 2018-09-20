@@ -26,7 +26,7 @@ def ask_user(prompt):
     valid_always = ['all', 'a']
     invalid = ['n', 'no']
     while True:
-        print('{0}'.format(prompt),end='')
+        print('{0} '.format(prompt),end='')
         choice = input().lower()
         if choice in valid_always: 
             global prompt_user
@@ -43,7 +43,7 @@ def create_directory(path):
         dry_run_events.append('mkdir: {0}'.format(exp)) 
         return 
     if (not op.isdir(exp)):
-        print("{0} doesnt exist, creating.".format(exp))
+        print('{0} doesnt exist, creating.'.format(exp))
         os.makedirs(exp)
 
 def create_symlink(src, dst):
@@ -52,9 +52,9 @@ def create_symlink(src, dst):
     broken_symlink = op.lexists(dst) and not op.exists(dst)
     if op.lexists(dst):
         if op.islink(dst) and os.readlink(dst) == src:
-            if not dry_run: print("Skipping existing {0} -> {1}".format(dst, src))
+            if not dry_run: print('Skipping existing {0} -> {1}'.format(dst, src))
             return
-        elif dry_run or prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(dst)):
+        elif dry_run or prompt_user or ask_user('{0} exists, delete it? [Y/a/n]'.format(dst)):
             if dry_run: dry_run_events.append('remove: {0}'.format(dst))
             else:
                 if op.isfile(dst) or broken_symlink or op.islink(dst): os.remove(dst)
@@ -99,7 +99,7 @@ def remove_path(path, force=False):
     if dry_run: 
         dry_run_events.append('remove: {0}'.format(path)) 
         return 
-    if force or not prompt_user or ask_user("{0} exists, delete it? [Y/a/n]".format(path)):
+    if force or not prompt_user or ask_user('{0} exists, delete it? [Y/a/n]'.format(path)):
         if op.isfile(path) or op.islink(path): os.remove(path)
         else: shutil.rmtree(path)
         return True
@@ -144,7 +144,7 @@ def main():
         op.chdir(origin_dir)
         if not op.exists(args.eject): 
             args.eject = op.realpath(args.eject)
-            print('{0} does not exist. Would you like to create it? [Y/n]'.format(args.eject))
+            print('{0} does not exist. Would you like to create it? [Y/n]'.format(args.eject)) # maybe use ask_user?
             if input().lower() in ['y', 'yes', '']: os.makedirs(args.eject)
             else: raise Exception('Unable to eject') 
         if op.exists(args.eject) and op.isdir(args.eject):
