@@ -1,21 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import print_function
-
-# Copyright (C) 2015 Vibhav Pant <vibhavp@gmail.com>
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
 import json
 import os
 import shutil
@@ -42,13 +25,15 @@ def ask_user(prompt): # this could have less lines
     valid = {'yes':True, 'y':True, '':True, 'no':False, 'n':False}
     valid_always = {'all': True, 'a':True}
     while True:
-        print('{0} '.format(prompt),end='')
+        print('{0}'.format(prompt),end='')
         choice = input().lower()
         if choice in valid: return valid[choice]
         if choice in valid_always:
             prompt_user = False
             return True
-        else: print("Enter a correct choice.", file=sys.stderr)
+        else: 
+            print("Enter a correct choice.", file=sys.stderr)
+            ask_user(prompt)
 
 def create_directory(path):
     exp = op.expanduser(path)
@@ -183,3 +168,17 @@ def main():
     if args.inspect: chdir_dotfiles(args.config)
 
 if __name__ == "__main__": main()
+# Copyright (C) 2015 Vibhav Pant <vibhavp@gmail.com>
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
