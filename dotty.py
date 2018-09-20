@@ -21,16 +21,16 @@ def run_command(command, chdir2dot=None):
     if dry_run: dry_run_events.append(command) 
     else: os.system(command)
 
-def ask_user(prompt): # this could have less lines
-    valid = {'yes':True, 'y':True, '':True, 'no':False, 'n':False}
-    valid_always = {'all': True, 'a':True}
+def ask_user(prompt):
+    valid = ['yes', 'y', '']
+    valid_always = ['all', 'a']
+    invalid = ['n', 'no']
     while True:
         print('{0}'.format(prompt),end='')
         choice = input().lower()
-        if choice in valid: return valid[choice]
-        if choice in valid_always:
-            prompt_user = False
-            return True
+        if choice in valid_always: prompt_user = False
+        elif choice in valid or valid_always: return True
+        elif choice in invalid: return False
         else: 
             print("Enter a correct choice.", file=sys.stderr)
             ask_user(prompt)
