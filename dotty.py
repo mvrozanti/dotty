@@ -28,8 +28,10 @@ def ask_user(prompt):
     while True:
         print('{0}'.format(prompt),end='')
         choice = input().lower()
-        if choice in valid_always: prompt_user = False
-        elif choice in valid or valid_always: return True
+        if choice in valid_always: 
+            global prompt_user
+            prompt_user = False
+        if choice in valid or valid_always: return True
         elif choice in invalid: return False
         else: 
             print("Enter a correct choice.", file=sys.stderr)
@@ -157,7 +159,7 @@ def main():
     if args.sync is not None and 'copy' in js:
         chdir_dotfiles(args.config)
         run_command('git add .')
-        commit_message = ' '.join(args.sync)
+        commit_message = ' '.join(args.sync) # join arguments as commit message
         if not dry_run and not args.force and not commit_message: commit_message = input('Please enter commit message for this change: ')
         run_command('git commit -m "{0}"'.format(commit_message))
         run_command('git diff HEAD^ HEAD')
