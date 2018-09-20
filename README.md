@@ -65,7 +65,7 @@ You're done!
             "<file in dotfiles folder>": "<file in filesystem>",
             "zshrc": "~/.zshrc",
             "emacs/lisp/": "~/.emacs.d/lisp",
-            "/mnt/1ADE1465DE134C17/or/another/external/drive": "~/external-drive"
+            "-mnt-1ADE1465DE134C17-or-another-external-drive": "~/external-drive"
         },
 
         "copy": {
@@ -77,7 +77,6 @@ You're done!
         "install_cmd": "apt-get install",
         "install": [
             "zsh",
-            "eclipse",
             "firefox",
             "vim"
         ],
