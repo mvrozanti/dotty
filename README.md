@@ -9,10 +9,13 @@
     cd ~/chosen-dotfiles-folder; [[ -f .git ]] || git init
     git submodule add https://github.com/mvrozanti/dotty; git submodule update --remote dotty
 
+  Optionally, you can copy the sample config file to your dotfiles directory with:
+    cp dotty/dotty-sample-config.json .
+
 You're done!
   
 ### Configuration
-  Dotty uses a JSON-formatted config located on the dotty repository directory.
+  Dotty uses a JSON-formatted config located on the dotfiles directory. 
   Currently, dotty can create/check with `mkdirs`, `link` or `copy` files/directories, `install` packages and execute shell `commands`.
 
   It is also capable of automatically pushing changes made to your dotfiles to remote repositories with the `-s` or `--sync` flag.
