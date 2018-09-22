@@ -10,6 +10,7 @@
     git submodule add https://github.com/mvrozanti/dotty; git submodule update --remote dotty
 
   Optionally, you can copy the sample config file to your dotfiles directory with:
+
     cp dotty/dotty-sample-config.json .
 
 You're done!
