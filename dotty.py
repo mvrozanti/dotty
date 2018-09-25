@@ -150,7 +150,7 @@ def main():
         if op.exists(args.eject) and op.isdir(args.eject):
             for f in os.listdir(os.getcwd()): shutil.move(op.realpath(f), args.eject)
     if args.backup or args.sync is not None and 'copy' in js: [copypath(src, dst, backup=True) for dst, src in js['copy'].items()] 
-    if args.restore and ['copy'] in js:
+    if args.restore and 'copy' in js:
         if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
         if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
         if 'copy' in js: [copypath(src, dst) for src, dst in js['copy'].items()]
