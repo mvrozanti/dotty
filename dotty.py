@@ -154,7 +154,7 @@ def main():
         if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
         if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
         if 'copy' in js: [copypath(src, dst) for src, dst in js['copy'].items()]
-        if 'install' in js and 'install_cmd' in js: run_command("{0} {1}".format(js['install_cmd'], ' '.join(js['install'])), chdir2dot=chdir_dotfiles)
+        if 'install' in js and 'install_cmd' in js: run_command("{0} {1}".format(js['install_cmd'], ' '.join(js['install'])), chdir2dot=args.config)
         if 'commands' in js: [run_command(command) for command in js['commands']]
     if args.sync is not None and 'copy' in js:
         chdir_dotfiles(args.config)
