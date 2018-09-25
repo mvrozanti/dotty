@@ -62,6 +62,8 @@ You're done!
 
  - No-op file configuration (exclude certain paths that match unix shell-style wildcards) under "noop" key
 
+ - Check if user needs/has sudo permissions on restore
+
 ### Sample configuration:
 
     {
