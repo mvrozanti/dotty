@@ -132,6 +132,7 @@ def main():
                print('Found dotty configuration at {}'.format(args.config))
     if args.config is None: raise Exception('JSON config file is missing, add it to this script\'s folder')
     js = json.load(open(args.config))
+    print('cd %s' % op.dirname(args.config))
     chdir_dotfiles(args.config) 
     def clear_dotfiles(force=False):
         if force  or input('This is about to clear the dotfiles directory, are you sure you want to proceed? [y/N] ') == 'y':
