@@ -123,8 +123,6 @@ def main():
     origin_dir = os.getcwd()
     dry_run = args.dry_run
     prompt_user = not args.force
-    # assert priviledges
-    if os.geteuid() != 0 and not subprocess.check_call("sudo -v -p '[sudo] password for %u: '", shell=True): print('Could not escalate priviledges. Exiting') or sys.exit(1)
     if not args.config: # look in parent directory of this script
         dir_path = op.abspath(op.join(op.dirname(op.realpath(__file__)), op.pardir))
         for f in os.listdir(dir_path):
@@ -154,6 +152,7 @@ def main():
             for f in os.listdir(os.getcwd()): shutil.move(op.realpath(f), args.eject)
     if args.backup or args.sync is not None and 'copy' in js: [copypath(src, dst, backup=True) for dst, src in js['copy'].items()] 
     if args.restore and 'copy' in js:
+        if os.geteuid() != 0 and not subprocess.check_call("sudo -v -p '[sudo] password for %u: '", shell=True): print('Could not escalate priviledges. Exiting') or sys.exit(1)
         if 'install' in js and 'install_cmd' in js: run_command("{0} {1}".format(js['install_cmd'], ' '.join(js['install'])), chdir2dot=args.config)
         if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
         if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
