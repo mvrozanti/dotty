@@ -7,6 +7,7 @@ import argparse
 import errno
 import os.path as op
 import glob
+import subprocess
 
 try: input = raw_input # Fix Python 2.x
 except NameError: pass
@@ -123,9 +124,7 @@ def main():
     dry_run = args.dry_run
     prompt_user = not args.force
     # assert priviledges
-    if os.geteuid() != 0:
-        msg = "[sudo] password for %u:"
-        if not subprocess.check_call("sudo -v -p '%s'" % msg, shell=True): print('Could not escalate priviledges. Exiting') or sys.exit(1)
+    if os.geteuid() != 0 and not subprocess.check_call("sudo -v -p '[sudo] password for %u: '", shell=True): print('Could not escalate priviledges. Exiting') or sys.exit(1)
     if not args.config: # look in parent directory of this script
         dir_path = op.abspath(op.join(op.dirname(op.realpath(__file__)), op.pardir))
         for f in os.listdir(dir_path):
