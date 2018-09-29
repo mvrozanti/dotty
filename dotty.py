@@ -80,7 +80,7 @@ def copypath(src, dst, backup=False):
     if '*' in src: 
         [copypath(path, dst, backup=backup) for path in glob.glob(src)]
         return 
-    if op.exists(dst) and not remove_path(dst): return 
+    if op.exists(dst) and not remove_path(dst, force=backup): return 
     if dry_run: 
         dry_run_events.append('copy: {0} -> {1}'.format(src, dst)) 
         return 
@@ -134,7 +134,7 @@ def main():
     js = json.load(open(args.config))
     chdir_dotfiles(args.config) 
     def clear_dotfiles(force=False):
-        if force  or input('This is about to clear the dotfiles directory, are you sure you want to proceed? [y/N] ') == 'y':
+        if forceyu  or input('This is about to clear the dotfiles directory, are you sure you want to proceed? [y/N] ') == 'y':
             chdir_dotfiles(args.config) 
             dotfiles_dir = op.dirname(args.config)
             for f in [op.abspath(f) for f in os.listdir(dotfiles_dir)]:
@@ -152,15 +152,12 @@ def main():
             for f in os.listdir(os.getcwd()): shutil.move(op.realpath(f), args.eject)
     if args.backup or args.sync is not None and 'copy' in js: [copypath(src, dst, backup=True) for dst, src in js['copy'].items()] 
     if args.restore and 'copy' in js:
-        print('Checking permissions...')
-        if os.geteuid() != 0: subprocess.check_call("sudo -v -p '[sudo] password for %u: '", shell=True) 
-        print('Checking permissions 2...')
-        # or print('Could not escalate priviledges. Exiting') or sys.exit(1)
+        if os.geteuid(): subprocess.check_call("sudo -v -p '[sudo] password for %u: '", shell=True) # assert permissions?
         if 'install' in js and 'install_cmd' in js: run_command("{0} {1}".format(js['install_cmd'], ' '.join(js['install'])), chdir2dot=args.config)
+        if 'commands' in js: [run_command(command) for command in js['commands']]
         if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
         if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
         if 'copy' in js: [copypath(src, dst) for src, dst in js['copy'].items()]
-        if 'commands' in js: [run_command(command) for command in js['commands']]
     if args.sync is not None and 'copy' in js:
         chdir_dotfiles(args.config)
         run_command('git add .')
