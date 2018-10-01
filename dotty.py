@@ -161,6 +161,7 @@ def main():
         run_command('git submodule update')
     if args.sync is not None and 'copy' in js:
         chdir_dotfiles(args.config)
+        run_command('git submodule update --recursive --remote')
         run_command('git add .')
         commit_message = ' '.join(args.sync) # join arguments as commit message
         if not dry_run and not args.force and not commit_message: commit_message = input('Please enter commit message for this change: ')
