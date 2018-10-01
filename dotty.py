@@ -43,7 +43,7 @@ def create_directory(path):
     if dry_run: 
         dry_run_events.append('mkdir: {0}'.format(exp)) 
         return 
-    if (not op.isdir(exp)):
+    if not op.isdir(exp):
         print('{0} doesnt exist, creating.'.format(exp))
         os.makedirs(exp)
 
