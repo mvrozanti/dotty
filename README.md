@@ -3,7 +3,7 @@
 ### Usage
 [![asciicast](https://asciinema.org/a/200410.png)](https://asciinema.org/a/200410)
 
-### Installation:
+### Installation
   Add dotty to your dotfiles' git repository:
   
     cd ~/chosen-dotfiles-folder; [[ -f .git ]] || git init
@@ -34,7 +34,7 @@ You're done!
 - Unix shell-style wildcards in `copy` paths
 - Support for git submodules
 
-### Parameters: 
+### Parameters 
   
     usage: dotty.py [-h] [--config *dotty*.json] [-f] [-b] [-c] [-r] [-d] [-s] [-e LOCATION]
     optional arguments:
@@ -59,7 +59,7 @@ You're done!
       -e LOCATION, --eject LOCATION
                             run --clear and move config folder to another location
                             (thank hoberto)
-### To be implemented:
+### To be implemented
 
  - Check if any file listed in config are missing and warn user before trying to operate on them
 
@@ -69,7 +69,7 @@ You're done!
 
  - Check if user needs/has sudo permissions and pip running on restore
 
-### Sample configuration:
+### Sample configuration
 
     {
         "mkdirs": ["~/.vim"],
