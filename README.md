@@ -23,11 +23,16 @@ You're done!
 
   Most importantly, it can also restore the dotfiles to their respective locations on the target file system. That is, you can take your files *and* your configurations anywhere, while backing it up remotely if desired.
 
+### Restoring dotfiles
+  Make sure to clone recursively so `dotty` and other submodules are cloned as well:
+
+    git clone --recursive https://github.com/<username>/<repository>
+
 
 ### Features
 - Link-following
 - Unix shell-style wildcards in `copy` paths
-- Dry runs
+- Support for git submodules
 
 ### Parameters: 
   

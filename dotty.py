@@ -158,6 +158,7 @@ def main():
         if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
         if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
         if 'copy' in js: [copypath(src, dst) for src, dst in js['copy'].items()]
+        run_command('git submodule update')
     if args.sync is not None and 'copy' in js:
         chdir_dotfiles(args.config)
         run_command('git add .')
