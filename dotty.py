@@ -134,7 +134,7 @@ def main():
     js = json.load(open(args.config))
     chdir_dotfiles(args.config) 
     def clear_dotfiles(force=False):
-        if forceyu  or input('This is about to clear the dotfiles directory, are you sure you want to proceed? [y/N] ') == 'y':
+        if force or input('This is about to clear the dotfiles directory, are you sure you want to proceed? [y/N] ') == 'y':
             chdir_dotfiles(args.config) 
             dotfiles_dir = op.dirname(args.config)
             for f in [op.abspath(f) for f in os.listdir(dotfiles_dir)]:
