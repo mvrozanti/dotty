@@ -28,6 +28,9 @@ You're done!
   Make sure to clone recursively so `dotty` and other submodules are cloned as well:
 
     git clone --recursive https://github.com/<username>/<repository>
+    ./dotty/dotty.py -s
+
+  This will start a `--sync` process as is shown in the first section of this README
 
 
 ### Features
