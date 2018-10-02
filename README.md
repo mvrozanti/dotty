@@ -7,7 +7,8 @@
   Add dotty to your dotfiles' git repository:
   
     cd ~/chosen-dotfiles-folder; [[ -f .git ]] || git init
-    git submodule add https://github.com/mvrozanti/dotty; git submodule update --remote dotty
+    git submodule add https://github.com/mvrozanti/dotty \
+     git submodule update --remote dotty
 
   Optionally, you can copy the sample config file to your dotfiles directory with:
 
