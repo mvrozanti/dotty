@@ -113,7 +113,8 @@ def main():
             it's only required if filename doesn't end in json or doesn't contain dotty in the basename", required=False)
     parser.add_argument("-f", "--force",   action='store_true', help="\033[1mdo not prompt user\033[0m: replace files/folders if they already exist, removing previous directory tree")
     parser.add_argument("-b", "--backup",  action='store_true', help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
-    parser.add_argument("-c", "--clear",   action='store_true', help="clears the config directory before anything, removing all files listed in it")
+    parser.add_argument("-c", "--clear-b", action='store_true', help="clears the config directory before any operations, removing all files listed in it")
+    parser.add_argument("-C", "--clear-a", action='store_true', help="clears the config directory after any anything, removing all files listed in it")
     parser.add_argument("-r", "--restore", action='store_true', help="restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)")
     parser.add_argument("-d", "--dry-run", action='store_true', help="perform a dry run, outputting what changes would have been made if this argument was removed [TODO]")
     parser.add_argument("-s", "--sync",    nargs='*',           help="perform action --backup, commits changes and pushes to the dotfiles remote repository (must already be set up) and then --clear", metavar='commit message')
@@ -140,7 +141,7 @@ def main():
             for f in [op.abspath(f) for f in os.listdir(dotfiles_dir)]:
                 if not any(name in op.basename(f) for name in SAFE_NAMES): remove_path(op.abspath(f), force=force)
         else: return 
-    if args.clear or args.eject: clear_dotfiles(force=False)
+    if args.clear_b or args.eject: clear_dotfiles(force=False)
     if args.eject:
         op.chdir(origin_dir)
         if not op.exists(args.eject): 
@@ -168,10 +169,10 @@ def main():
         run_command('git commit -m "{0}"'.format(commit_message))
         run_command('git diff HEAD^ HEAD')
         run_command('git push {0}'.format('-f' if args.force else ''))
-        clear_dotfiles(force=True)
     if args.dry_run: 
         for evt in dry_run_events: print(evt)
     if args.inspect: chdir_dotfiles(args.config)
+    if not args.dry_run and args.clear_a: clear_dotfiles()
 
 if __name__ == "__main__": main()
 # Copyright (C) 2015 Vibhav Pant <vibhavp@gmail.com>

@@ -51,8 +51,10 @@ You're done!
                             they already exist, removing previous directory tree
       -b, --backup          run copy in reverse so that files and directories are
                             backed up to the directory the config file is in
-      -c, --clear           clears the config directory before anything, removing
+      -c, --clear-b         clears the config directory before anything, removing
                             all files listed in it
+      -C, --clear-a         clears the config directory after any anything,
+                            removing all files listed in it
       -r, --restore         restore all elements to system (mkdirs, link, copy,
                             install(install_cmd), commands)
       -d, --dryrun          perform a dry run, outputting what changes would have
