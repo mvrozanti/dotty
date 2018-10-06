@@ -141,7 +141,7 @@ def main():
             for f in [op.abspath(f) for f in os.listdir(dotfiles_dir)]:
                 if not any(name in op.basename(f) for name in SAFE_NAMES): remove_path(op.abspath(f), force=force)
         else: return 
-    if args.clear_b or args.eject: clear_dotfiles(force=False)
+    if args.clear_b or args.eject: clear_dotfiles(force=args.clear_b)
     if args.eject:
         op.chdir(origin_dir)
         if not op.exists(args.eject): 
