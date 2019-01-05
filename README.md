@@ -5,7 +5,7 @@
 
 ### Installation
   Add dotty to your dotfiles' git repository:
-  
+
     cd ~/chosen-dotfiles-folder; [[ -f .git ]] || git init
     git submodule add https://github.com/mvrozanti/dotty \
      git submodule update --remote dotty
@@ -15,9 +15,9 @@
     cp dotty/dotty-sample-config.json .
 
 You're done!
-  
+
 ### Configuration
-  Dotty uses a JSON-formatted config located on the dotfiles directory. 
+  Dotty uses a JSON-formatted config located on the dotfiles directory. "Comments" can be made starting with \_.
   Currently, dotty can create/check with `mkdirs`, `link` or `copy` files/directories, `install` packages and execute shell `commands`.
 
   It is also capable of automatically pushing changes made to your dotfiles to remote repositories with the `-s` or `--sync` flag.
@@ -35,11 +35,11 @@ You're done!
 
 ### Features
 - Link-following
-- Unix shell-style wildcards in `copy` paths
+- Unix shell-style wildcards (globbing) in `copy` paths
 - Support for git submodules
 
-### Parameters 
-  
+### Parameters
+
     usage: dotty.py [-h] [--config *dotty*.json] [-f] [-b] [-c] [-r] [-d] [-s] [-e LOCATION]
     optional arguments:
       -h, --help            show this help message and exit
@@ -79,7 +79,7 @@ You're done!
 
     {
         "mkdirs": ["~/.vim"],
-        
+
         "link": {
             "<file in dotfiles folder>": "<file in filesystem>",
             "zshrc": "~/.zshrc",
@@ -88,6 +88,7 @@ You're done!
         },
 
         "copy": {
+            "_this is a comment" : "_if you want to have them in your json config"
             "<file in dotfiles folder>": "<file in filesystem>",
             ".vimrc": "~/.vimrc",
             ".config/": "~/.config/*conf"
@@ -99,7 +100,7 @@ You're done!
             "firefox",
             "vim"
         ],
-            
+
         "commands": [
             "git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim && vim +PluginInstall +qall"
         ]
