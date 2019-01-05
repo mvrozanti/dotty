@@ -1,6 +1,6 @@
 {
     "mkdirs": ["~/.vim"],
-    
+
     "link": {
         "<file in dotfiles folder>": "<file in filesystem>",
         "zshrc": "~/.zshrc",
@@ -20,7 +20,7 @@
         "firefox",
         "vim"
     ],
-		
+
     "commands": [
         "git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim && vim +PluginInstall +qall"
     ]

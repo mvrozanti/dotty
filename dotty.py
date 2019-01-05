@@ -19,7 +19,7 @@ dry_run_events = []
 
 def run_command(command, chdir2dot=None):
     if chdir2dot: chdir_dotfiles(chdir2dot)
-    if dry_run: dry_run_events.append(command) 
+    if dry_run: dry_run_events.append(command)
     else: os.system(command)
 
 def ask_user(prompt):
@@ -29,20 +29,20 @@ def ask_user(prompt):
     while True:
         print('{0} '.format(prompt),end='')
         choice = input().lower()
-        if choice in valid_always: 
+        if choice in valid_always:
             global prompt_user
             prompt_user = False
         if choice in valid or valid_always: return True
         elif choice in invalid: return False
-        else: 
+        else:
             print("Enter a correct choice.", file=sys.stderr)
             ask_user(prompt)
 
 def create_directory(path):
     exp = op.expanduser(path)
-    if dry_run: 
-        dry_run_events.append('mkdir: {0}'.format(exp)) 
-        return 
+    if dry_run:
+        dry_run_events.append('mkdir: {0}'.format(exp))
+        return
     if not op.isdir(exp):
         print('{0} doesnt exist, creating.'.format(exp))
         os.makedirs(exp)
@@ -62,9 +62,9 @@ def create_symlink(src, dst):
                 else: shutil.rmtree(dst)
         else: return
     if not dry_run: print("Linking {0} -> {1}".format(dst, src))
-    if dry_run: 
-        dry_run_events.append('symlink: {0} -> {1}'.format(src, dst)) 
-        return 
+    if dry_run:
+        dry_run_events.append('symlink: {0} -> {1}'.format(src, dst))
+        return
     try: os.symlink(src, dst)
     except AttributeError:
         import ctypes
@@ -77,29 +77,29 @@ def create_symlink(src, dst):
 def copypath(src, dst, backup=False):
     dst = op.expanduser(dst) if not backup else op.abspath(dst)
     src = op.abspath(src) if not backup else op.expanduser(src)
-    if '*' in src: 
+    if '*' in src:
         [copypath(path, dst, backup=backup) for path in glob.glob(src)]
-        return 
-    if op.exists(dst) and not remove_path(dst, force=backup): return 
-    if dry_run: 
+        return
+    if op.exists(dst) and not remove_path(dst, force=backup): return
+    if dry_run:
         dry_run_events.append('copy: %100s -> %s' % (src, dst))
-        return 
+        return
     else: print("Copying %s -> %100s" % (src, dst))
-    if op.isfile(src): 
-        try: shutil.copy(src, dst) 
+    if op.isfile(src):
+        try: shutil.copy(src, dst)
         except Exception as e:
             if e.errno not in [errno.ENOENT, errno.ENXIO]: raise
             os.makedirs(op.dirname(dst))
-            shutil.copy(src, dst) 
-    else: 
+            shutil.copy(src, dst)
+    else:
         try: shutil.copytree(src, dst)
         except: pass
 
 def remove_path(path, force=False):
     path = op.abspath(path)
-    if dry_run: 
-        dry_run_events.append('remove: {0}'.format(path)) 
-        return 
+    if dry_run:
+        dry_run_events.append('remove: {0}'.format(path))
+        return
     if force or not prompt_user or ask_user('{0} exists, delete it? [Y/a/n]'.format(path)):
         if op.isfile(path) or op.islink(path): os.remove(path)
         else: shutil.rmtree(path)
@@ -128,37 +128,37 @@ def main():
         dir_path = op.abspath(op.join(op.dirname(op.realpath(__file__)), op.pardir))
         for f in os.listdir(dir_path):
             basename = op.basename(f)
-            if all(name in basename for name in ['dotty','json']): 
+            if all(name in basename for name in ['dotty','json']):
                args.config = op.join(dir_path, f)
                print('Found dotty configuration at {}'.format(args.config))
     if args.config is None: raise Exception('JSON config file is missing, add it to this script\'s folder')
     js = json.load(open(args.config))
-    chdir_dotfiles(args.config) 
+    chdir_dotfiles(args.config)
     def clear_dotfiles(force=False):
         if force or input('This is about to clear the dotfiles directory, are you sure you want to proceed? [y/N] ') == 'y':
-            chdir_dotfiles(args.config) 
+            chdir_dotfiles(args.config)
             dotfiles_dir = op.dirname(args.config)
             for f in [op.abspath(f) for f in os.listdir(dotfiles_dir)]:
                 if not any(name in op.basename(f) for name in SAFE_NAMES): remove_path(op.abspath(f), force=force)
-        else: return 
+        else: return
     if args.clear_b or args.eject: clear_dotfiles(force=args.clear_b)
     if args.eject:
         op.chdir(origin_dir)
-        if not op.exists(args.eject): 
+        if not op.exists(args.eject):
             args.eject = op.realpath(args.eject)
             print('{0} does not exist. Would you like to create it? [Y/n]'.format(args.eject)) # maybe use ask_user?
             if input().lower() in ['y', 'yes', '']: os.makedirs(args.eject)
-            else: raise Exception('Unable to eject') 
+            else: raise Exception('Unable to eject')
         if op.exists(args.eject) and op.isdir(args.eject):
             for f in os.listdir(os.getcwd()): shutil.move(op.realpath(f), args.eject)
-    if args.backup or args.sync is not None and 'copy' in js: [copypath(src, dst, backup=True) for dst, src in js['copy'].items()] 
+    if args.backup or args.sync is not None and 'copy' in js: [copypath(src, dst, backup=True) for dst, src in js['copy'].items() if dst[0] != '_' and src[0] != '_']
     if args.restore and 'copy' in js:
         if os.geteuid(): subprocess.check_call("sudo -v -p '[sudo] password for %u: '", shell=True) # assert permissions?
         if 'install' in js and 'install_cmd' in js: run_command("{0} {1}".format(js['install_cmd'], ' '.join(js['install'])), chdir2dot=args.config)
         if 'commands' in js: [run_command(command) for command in js['commands']]
         if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
-        if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items()]
-        if 'copy' in js: [copypath(src, dst) for src, dst in js['copy'].items()]
+        if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items() if dst[0] != '_' and src[0] != '_']
+        if 'copy' in js: [copypath(src, dst) for src, dst in js['copy'].items() if dst[0] != '_' and src[0] != '_']
         run_command('git submodule update')
     if args.sync is not None and 'copy' in js:
         chdir_dotfiles(args.config)
@@ -169,7 +169,7 @@ def main():
         run_command('git commit -m "{0}"'.format(commit_message))
         run_command('git diff HEAD^ HEAD')
         run_command('git push {0}'.format('-f' if args.force else ''))
-    if args.dry_run: 
+    if args.dry_run:
         for evt in dry_run_events: print(evt)
     if args.inspect: chdir_dotfiles(args.config)
     if not args.dry_run and args.clear_a: clear_dotfiles()
