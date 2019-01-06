@@ -42,6 +42,13 @@ def ask_user(prompt):
             print("Enter a correct choice.", file=sys.stderr)
             ask_user(prompt)
 
+def check_sudo():
+    if getpass.getuser() == 'root' and input('Copying files as root can be dangerous. Proceed? [y/N]').lower() not in ['y', 'yes']: sys.exit(1)
+    if os.geteuid():
+        if subprocess.check_call("sudo -v -p '[sudo] password for %u: '", shell=True):
+            print('Couldn\'t authenticate')
+            sys.exit(1)
+
 def create_directory(path):
     exp = op.expanduser(path)
     if dry_run:
@@ -89,23 +96,23 @@ def copypath(src, dst, backup=False):
     dst = op.expanduser(dst) if not backup else op.abspath(dst)
     src = op.abspath(src) if not backup else op.expanduser(src)
     if '*' in src:
-        if '*' in dst:
-            result1 = ''
-            result2 = ''
-            globbed_src = None
-            if not glob.glob(dst):
-                try: globbed_src = glob.glob(src)[0]
-                except Exception as e:
-                    print('File not found: ' + src)
-                    return
-                maxlen=len(src) if len(globbed_src)<len(src) else len(globbed_src)
-                for i in range(maxlen):
-                  letter1=globbed_src[i:i+1]
-                  letter2=src[i:i+1]
-                  if letter1 != letter2:
-                    result1+=letter1
-                    result2+=letter2
-                dst = dst.replace(result2, result1)
+#         if '*' in dst:
+#             result1 = ''
+#             result2 = ''
+#             globbed_src = None
+#             if not glob.glob(dst):
+#                 try: globbed_src = glob.glob(src)[0]
+#                 except Exception as e:
+#                     print('File not found: ' + src)
+#                     return
+#                 maxlen=len(src) if len(globbed_src)<len(src) else len(globbed_src)
+#                 for i in range(maxlen):
+#                   letter1=globbed_src[i:i+1]
+#                   letter2=src[i:i+1]
+#                   if letter1 != letter2:
+#                     result1+=letter1
+#                     result2+=letter2
+#                 dst = dst.replace(result2, result1)
         [copypath(path, dst, backup=backup) for path in glob.glob(src)]
         return
     if op.exists(dst) and not remove_path(dst, force=backup): return
@@ -116,6 +123,9 @@ def copypath(src, dst, backup=False):
     if op.isfile(src):
         try: shutil.copy(src, dst)
         except Exception as e:
+            if e.errno == 13:
+                check_sudo()
+                copypath(src,dst,backup)
             if e.errno not in [errno.ENOENT, errno.ENXIO]: raise
             os.makedirs(op.dirname(dst))
             shutil.copy(src, dst)
@@ -183,12 +193,7 @@ def main():
             for f in os.listdir(os.getcwd()): shutil.move(op.realpath(f), args.eject)
     if args.backup or args.sync is not None and 'copy' in js: [copypath(src, dst, backup=True) for dst, src in js['copy'].items() if dst[0] != '_' and src[0] != '_']
     if args.restore and 'copy' in js:
-        if getpass.getuser() == 'root':
-            if input('Copying files as root can be dangerous. Proceed? [y/N]').lower() not in ['y', 'yes']: sys.exit(1)
-        if os.geteuid():
-            if subprocess.check_call("sudo -v -p '[sudo] password for %u: '", shell=True):
-                print('Couldn\'t authenticate')
-                sys.exit(1)
+        check_sudo()
         if 'install' in js and 'install_cmd' in js:
             for c in js['install']: run_command("{0} {1}".format(js['install_cmd'], c), chdir2dot=args.config)
         if 'commands' in js: [run_command(command) for command in js['commands']]
