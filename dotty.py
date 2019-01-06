@@ -82,11 +82,8 @@ def copypath(src, dst, backup=False):
     src = op.abspath(src) if not backup else op.expanduser(src)
     if '*' in src:
         if '*' in dst:
-            try:
-               dst = glob.glob(dst)[0]
-            except Exception as e:
-                print(e)
-                print('Skipping %100s -> %s' % (src,dst))
+            try: dst = glob.glob(dst)[0]
+            except: pass
         [copypath(path, dst, backup=backup) for path in glob.glob(src)]
         return
     if op.exists(dst) and not remove_path(dst, force=backup): return
