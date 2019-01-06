@@ -156,13 +156,14 @@ def main():
             for f in os.listdir(os.getcwd()): shutil.move(op.realpath(f), args.eject)
     if args.backup or args.sync is not None and 'copy' in js: [copypath(src, dst, backup=True) for dst, src in js['copy'].items() if dst[0] != '_' and src[0] != '_']
     if args.restore and 'copy' in js:
+        if getpass.getuser() == 'root':
+            if input('Copying files as root can be dangerous. Proceed? [y/N]').lower() not in ['y', 'yes']: sys.exit(1)
         if os.geteuid():
-            if getpass.getuser() == 'root':
-                if input('Copying files as root can be dangerous. Proceed? [y/N]').lower() not in ['y', 'yes']: sys.exit(1)
             if subprocess.check_call("sudo -v -p '[sudo] password for %u: '", shell=True):
                 print('Couldn\'t authenticate')
                 sys.exit(1)
-        if 'install' in js and 'install_cmd' in js: run_command("{0} {1}".format(js['install_cmd'], ' '.join(js['install'])), chdir2dot=args.config)
+        if 'install' in js and 'install_cmd' in js:
+            for c in js['install']: run_command("{0} {1}".format(js['install_cmd'], c), chdir2dot=args.config)
         if 'commands' in js: [run_command(command) for command in js['commands']]
         if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
         if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items() if dst[0] != '_' and src[0] != '_']
