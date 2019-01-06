@@ -83,7 +83,7 @@ def copypath(src, dst, backup=False):
     if '*' in src:
         if '*' in dst:
             try: dst = glob.glob(dst)[0]
-            except: pass
+            except: continue
         [copypath(path, dst, backup=backup) for path in glob.glob(src)]
         return
     if op.exists(dst) and not remove_path(dst, force=backup): return
