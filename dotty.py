@@ -78,6 +78,13 @@ def create_symlink(src, dst):
         flags = 1 if op.isdir(src) else 0
         symlink(dst, src, flags)
 
+def strIntersection(s1, s2):
+  out = ""
+  for c in s1:
+    if c in s2 and not c in out:
+      out += c
+  return out
+
 def copypath(src, dst, backup=False):
     dst = op.expanduser(dst) if not backup else op.abspath(dst)
     src = op.abspath(src) if not backup else op.expanduser(src)
@@ -85,7 +92,11 @@ def copypath(src, dst, backup=False):
         if '*' in dst:
             result1 = ''
             result2 = ''
-            globbed_src = glob.glob(src)
+            globbed_src = None
+            try: globbed_src = glob.glob(src)[0]
+            except Exception as e:
+                print('File not found: ' + src)
+                return
             maxlen=len(src) if len(globbed_src)<len(src) else len(globbed_src)
             for i in range(maxlen):
               letter1=globbed_src[i:i+1]
@@ -93,8 +104,7 @@ def copypath(src, dst, backup=False):
               if letter1 != letter2:
                 result1+=letter1
                 result2+=letter2
-            code.interact(local=locals())
-            dst = src.replace(result2, result1)
+            dst = dst.replace(result2, result1)
         [copypath(path, dst, backup=backup) for path in glob.glob(src)]
         return
     if op.exists(dst) and not remove_path(dst, force=backup): return
