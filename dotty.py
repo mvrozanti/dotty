@@ -83,10 +83,9 @@ def copypath(src, dst, backup=False):
     src = op.abspath(src) if not backup else op.expanduser(src)
     if '*' in src:
         if '*' in dst:
-            try: dst = glob.glob(dst)[0]
-            except: pass
-        try: [copypath(path, dst, backup=backup) for path in glob.glob(src)]
-        except Exception as e: code.interact(local=locals())
+            print('Globbing unavailable as destination')
+            return
+        [copypath(path, dst, backup=backup) for path in glob.glob(src)]
         return
     if op.exists(dst) and not remove_path(dst, force=backup): return
     if dry_run:
