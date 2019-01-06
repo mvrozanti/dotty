@@ -19,9 +19,11 @@ prompt_user, dry_run = True, False
 dry_run_events = []
 
 def run_command(command, chdir2dot=None):
-    if chdir2dot: chdir_dotfiles(chdir2dot)
-    if dry_run: dry_run_events.append(command)
-    else: os.system(command)
+    try:
+        if chdir2dot: chdir_dotfiles(chdir2dot)
+        if dry_run: dry_run_events.append(command)
+        else: os.system(command)
+    except Exception as e: print(e)
 
 def ask_user(prompt):
     valid = ['yes', 'y', '']
