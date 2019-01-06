@@ -88,8 +88,8 @@ def copypath(src, dst, backup=False):
             globbed_src = glob.glob(src)
             maxlen=len(src) if len(globbed_src)<len(src) else len(globbed_src)
             for i in range(maxlen):
-              letter1=str1[i:i+1]
-              letter2=str2[i:i+1]
+              letter1=globbed_src[i:i+1]
+              letter2=src[i:i+1]
               if letter1 != letter2:
                 result1+=letter1
                 result2+=letter2
