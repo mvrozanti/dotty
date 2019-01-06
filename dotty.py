@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import code
 import getpass
 import json
