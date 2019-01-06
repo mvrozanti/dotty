@@ -156,7 +156,7 @@ def main():
     if args.restore and 'copy' in js:
         if os.geteuid():
             if getpass.getuser() == 'root':
-                input('Copying files as root can be dangerous. Proceed? [y/N]').lower() not in ['y', 'yes']: sys.exit(1)
+                if input('Copying files as root can be dangerous. Proceed? [y/N]').lower() not in ['y', 'yes']: sys.exit(1)
             if subprocess.check_call("sudo -v -p '[sudo] password for %u: '", shell=True):
                 print('Couldn\'t authenticate')
                 sys.exit(1)
