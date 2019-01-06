@@ -99,15 +99,17 @@ def copypath(src, dst, backup=False):
         except: pass
 
 def remove_path(path, force=False):
-    path = op.abspath(path)
-    if dry_run:
-        dry_run_events.append('remove: {0}'.format(path))
-        return
-    if force or not prompt_user or ask_user('{0} exists, delete it? [Y/a/n]'.format(path)):
-        if op.isfile(path) or op.islink(path): os.remove(path)
-        else: shutil.rmtree(path)
-        return True
-    else: return False
+    try:
+        path = op.abspath(path)
+        if dry_run:
+            dry_run_events.append('remove: {0}'.format(path))
+            return
+        if force or not prompt_user or ask_user('{0} exists, delete it? [Y/a/n]'.format(path)):
+            if op.isfile(path) or op.islink(path): os.remove(path)
+            else: shutil.rmtree(path)
+            return True
+        else: return False
+    except Exception as e: print(e)
 
 def main():
     global dry_run,prompt_user
