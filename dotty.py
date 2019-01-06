@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import code
 import getpass
 import json
 import os
@@ -83,8 +84,9 @@ def copypath(src, dst, backup=False):
     if '*' in src:
         if '*' in dst:
             try: dst = glob.glob(dst)[0]
-            except: continue
-        [copypath(path, dst, backup=backup) for path in glob.glob(src)]
+            except: pass
+        try: [copypath(path, dst, backup=backup) for path in glob.glob(src)]
+        except Exception as e: code.interact(local=locals())
         return
     if op.exists(dst) and not remove_path(dst, force=backup): return
     if dry_run:
