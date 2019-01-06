@@ -83,8 +83,18 @@ def copypath(src, dst, backup=False):
     src = op.abspath(src) if not backup else op.expanduser(src)
     if '*' in src:
         if '*' in dst:
-            print('Globbing unavailable as destination')
-            return
+            result1 = ''
+            result2 = ''
+            globbed_src = glob.glob(src)
+            maxlen=len(src) if len(globbed_src)<len(src) else len(globbed_src)
+            for i in range(maxlen):
+              letter1=str1[i:i+1]
+              letter2=str2[i:i+1]
+              if letter1 != letter2:
+                result1+=letter1
+                result2+=letter2
+            code.interact(local=locals())
+            dst = src.replace(result2, result1)
         [copypath(path, dst, backup=backup) for path in glob.glob(src)]
         return
     if op.exists(dst) and not remove_path(dst, force=backup): return
