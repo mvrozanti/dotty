@@ -96,23 +96,23 @@ def copypath(src, dst, backup=False):
     dst = op.expanduser(dst) if not backup else op.abspath(dst)
     src = op.abspath(src) if not backup else op.expanduser(src)
     if '*' in src:
-#         if '*' in dst:
-#             result1 = ''
-#             result2 = ''
-#             globbed_src = None
-#             if not glob.glob(dst):
-#                 try: globbed_src = glob.glob(src)[0]
-#                 except Exception as e:
-#                     print('File not found: ' + src)
-#                     return
-#                 maxlen=len(src) if len(globbed_src)<len(src) else len(globbed_src)
-#                 for i in range(maxlen):
-#                   letter1=globbed_src[i:i+1]
-#                   letter2=src[i:i+1]
-#                   if letter1 != letter2:
-#                     result1+=letter1
-#                     result2+=letter2
-#                 dst = dst.replace(result2, result1)
+        if '*' in dst and backup:
+            result1 = ''
+            result2 = ''
+            globbed_src = None
+            if not glob.glob(dst):
+                try: globbed_src = glob.glob(src)[0]
+                except Exception as e:
+                    print('File not found: ' + src)
+                    return
+                maxlen=len(src) if len(globbed_src)<len(src) else len(globbed_src)
+                for i in range(maxlen):
+                  letter1=globbed_src[i:i+1]
+                  letter2=src[i:i+1]
+                  if letter1 != letter2:
+                    result1+=letter1
+                    result2+=letter2
+                dst = dst.replace(result2, result1)
         [copypath(path, dst, backup=backup) for path in glob.glob(src)]
         return
     if op.exists(dst) and not remove_path(dst, force=backup): return
