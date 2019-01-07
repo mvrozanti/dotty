@@ -86,6 +86,7 @@ def create_symlink(src, dst):
         symlink(dst, src, flags)
 
 def copypath(src, dst, backup=False):
+    print(src, dst, backup)
     dst = op.expanduser(dst) if not backup else op.abspath(dst)
     src = op.abspath(src) if not backup else op.expanduser(src)
     if '*' in src:
@@ -108,8 +109,7 @@ def copypath(src, dst, backup=False):
 #                 dst = dst.replace(result2, result1)
         try:
             [copypath(path, dst, backup=backup) for path in glob.glob(src)]
-        except Exception as e:
-            print(e)
+        except Exception as e: print(e)
         finally: return
     if op.exists(dst) and not remove_path(dst, force=backup): return
     if dry_run:
