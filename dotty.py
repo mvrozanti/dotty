@@ -52,7 +52,7 @@ def check_sudo():
 def create_directory(path):
     exp = op.expanduser(path)
     if dry_run:
-        dry_run_events.append('mkdir: {0}'.format(exp))
+        dry_run_events.append('would mkdir: {0}'.format(exp))
         return
     if not op.isdir(exp):
         print('{0} doesnt exist, creating.'.format(exp))
@@ -64,7 +64,7 @@ def create_symlink(src, dst):
     broken_symlink = op.lexists(dst) and not op.exists(dst)
     if op.lexists(dst):
         if op.islink(dst) and os.readlink(dst) == src:
-            if not dry_run: print('Skipping existing {0} -> {1}'.format(dst, src))
+            if not dry_run: print('would skip existing symlink {0} -> {1}'.format(dst, src))
             return
         elif dry_run or prompt_user or ask_user('{0} exists, delete it? [Y/a/n]'.format(dst)):
             if dry_run: dry_run_events.append('remove: {0}'.format(dst))
@@ -74,7 +74,7 @@ def create_symlink(src, dst):
         else: return
     if not dry_run: print("Linking {0} -> {1}".format(dst, src))
     if dry_run:
-        dry_run_events.append('symlink: {0} -> {1}'.format(src, dst))
+        dry_run_events.append('would symlink: {0} -> {1}'.format(src, dst))
         return
     try: os.symlink(src, dst)
     except AttributeError:
@@ -85,46 +85,43 @@ def create_symlink(src, dst):
         flags = 1 if op.isdir(src) else 0
         symlink(dst, src, flags)
 
-def strIntersection(s1, s2):
-  out = ""
-  for c in s1:
-    if c in s2 and not c in out:
-      out += c
-  return out
-
 def copypath(src, dst, backup=False):
     dst = op.expanduser(dst) if not backup else op.abspath(dst)
     src = op.abspath(src) if not backup else op.expanduser(src)
     if '*' in src:
-        if '*' in dst and backup:
-            result1 = ''
-            result2 = ''
-            globbed_src = None
-            if not glob.glob(dst):
-                try: globbed_src = glob.glob(src)[0]
-                except Exception as e:
-                    print('File not found: ' + src)
-                    return
-                maxlen=len(src) if len(globbed_src)<len(src) else len(globbed_src)
-                for i in range(maxlen):
-                  letter1=globbed_src[i:i+1]
-                  letter2=src[i:i+1]
-                  if letter1 != letter2:
-                    result1+=letter1
-                    result2+=letter2
-                dst = dst.replace(result2, result1)
-        [copypath(path, dst, backup=backup) for path in glob.glob(src)]
-        return
+#         if '*' in dst and backup:
+#             result1 = ''
+#             result2 = ''
+#             globbed_src = None
+#             if not glob.glob(dst):
+#                 try: globbed_src = glob.glob(src)[0]
+#                 except Exception as e:
+#                     print('File not found: ' + src)
+#                     return
+#                 maxlen=len(src) if len(globbed_src)<len(src) else len(globbed_src)
+#                 for i in range(maxlen):
+#                   letter1=globbed_src[i:i+1]
+#                   letter2=src[i:i+1]
+#                   if letter1 != letter2:
+#                     result1+=letter1
+#                     result2+=letter2
+#                 dst = dst.replace(result2, result1)
+        try:
+            [copypath(path, dst, backup=backup) for path in glob.glob(src)]
+        except Exception as e:
+            print(e)
+        finally: return
     if op.exists(dst) and not remove_path(dst, force=backup): return
     if dry_run:
-        dry_run_events.append('copy: %100s -> %s' % (src, dst))
+        dry_run_events.append('would copy: %100s -> %s' % (src, dst))
         return
-    else: print("Copying %s -> %100s" % (src, dst))
     if op.isfile(src):
+        if not dry_run: print("Copying %s -> %100s" % (src, dst))
         try: shutil.copy(src, dst)
         except Exception as e:
             if e.errno == 13:
                 check_sudo()
+                print('!')
                 copypath(src,dst,backup)
             if e.errno not in [errno.ENOENT, errno.ENXIO]: raise
             os.makedirs(op.dirname(dst))
