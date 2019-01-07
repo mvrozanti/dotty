@@ -192,8 +192,9 @@ def main():
     if args.restore and 'copy' in js:
         check_sudo()
         if 'install' in js and 'install_cmd' in js:
-            for c in js['install']: run_command("{0} {1}".format(js['install_cmd'], c), chdir2dot=args.config)
-        if 'commands' in js: [run_command(command) for command in js['commands']]
+            for c in js['install']:
+                if c[0] != '_': run_command("{0} {1}".format(js['install_cmd'], c), chdir2dot=args.config)
+        if 'commands' in js: [run_command(command) for command in js['commands'] if command[0] != '_']
         if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
         if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items() if dst[0] != '_' and src[0] != '_']
         if 'copy' in js: [copypath(src, dst) for src, dst in js['copy'].items() if dst[0] != '_' and src[0] != '_']
