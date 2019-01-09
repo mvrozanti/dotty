@@ -119,9 +119,8 @@ def copypath(src, dst, backup=False):
         if not dry_run: print("Copying %s -> %100s" % (src, dst))
         try: shutil.copy(src, dst)
         except Exception as e:
-            if e.errno == 13:
+            if e.errno == errno.EPERM or e.errno == errno.EACCES:
                 check_sudo()
-                print('!')
                 copypath(src,dst,backup)
             if e.errno not in [errno.ENOENT, errno.ENXIO]: raise
             os.makedirs(op.dirname(dst))
@@ -151,10 +150,10 @@ def main():
     parser.add_argument("-f", "--force",   action='store_true', help="\033[1mdo not prompt user\033[0m: replace files/folders if they already exist, removing previous directory tree")
     parser.add_argument("-b", "--backup",  action='store_true', help="run copy in reverse so that files and directories are backed up to the directory the config file is in")
     parser.add_argument("-c", "--clear-b", action='store_true', help="clears the config directory before any operations, removing all files listed in it")
-    parser.add_argument("-C", "--clear-a", action='store_true', help="clears the config directory after any anything, removing all files listed in it")
+    parser.add_argument("-C", "--clear-a", action='store_true', help="clears the config directory after every operation, removing all files listed in it")
     parser.add_argument("-r", "--restore", action='store_true', help="restore all elements to system (mkdirs, link, copy, install(install_cmd), commands)")
     parser.add_argument("-d", "--dry-run", action='store_true', help="perform a dry run, outputting what changes would have been made if this argument was removed [TODO]")
-    parser.add_argument("-s", "--sync",    nargs='*',           help="perform action --backup, commits changes and pushes to the dotfiles remote repository (must already be set up) and then --clear", metavar='commit message')
+    parser.add_argument("-s", "--sync",    nargs='*',           help="perform action --backup, commits changes and pushes to the dotfiles remote repository (must already be set up) and then --clear-a", metavar='commit message')
     parser.add_argument("-e", "--eject",   metavar='LOCATION',  help="run --clear and move contents of dotfiles folder to another folder (thank hoberto)")
     parser.add_argument("-i", "--inspect", action='store_true', help="show differences between the last commit and the one before that [TODO]")
     args = parser.parse_args()
@@ -188,7 +187,9 @@ def main():
             else: raise Exception('Unable to eject')
         if op.exists(args.eject) and op.isdir(args.eject):
             for f in os.listdir(os.getcwd()): shutil.move(op.realpath(f), args.eject)
-    if args.backup or args.sync is not None and 'copy' in js: [copypath(src, dst, backup=True) for dst, src in js['copy'].items() if dst[0] != '_' and src[0] != '_']
+    if args.backup or args.sync is not None and 'copy' in js:
+        [run_command(command) for command in js['before_bak']]
+        [copypath(src, dst, backup=True) for dst, src in js['copy'].items() if dst[0] != '_' and src[0] != '_']
     if args.restore and 'copy' in js:
         check_sudo()
         if 'install' in js and 'install_cmd' in js:
