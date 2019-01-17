@@ -42,9 +42,10 @@ def ask_user(prompt):
             print("Enter a correct choice.", file=sys.stderr)
             ask_user(prompt)
 
-def check_sudo():
+def check_sudo(msg=None):
     if getpass.getuser() == 'root' and input('Copying files as root can be dangerous. Proceed? [y/N]').lower() not in ['y', 'yes']: sys.exit(1)
     if os.geteuid():
+        if msg: print(msg)
         if subprocess.check_call("sudo -v -p '[sudo] password for %u: '", shell=True):
             print('Couldn\'t authenticate')
             sys.exit(1)
@@ -116,10 +117,11 @@ def copypath(src, dst, backup=False):
         dry_run_events.append('would copy: %100s -> %s' % (src, dst))
         return
     if op.isfile(src):
-        if not dry_run: print("Copying %s -> %100s" % (src, dst))
+        if not dry_run: print("Copying %100s -> %s" % (src, dst))
         try: shutil.copy(src, dst)
         except Exception as e:
             if e.errno == errno.EPERM or e.errno == errno.EACCES:
+                print(src, '->', dst)
                 check_sudo()
                 copypath(src,dst,backup)
             if e.errno not in [errno.ENOENT, errno.ENXIO]: raise
@@ -136,7 +138,14 @@ def remove_path(path, force=False):
             dry_run_events.append('remove: {0}'.format(path))
             return
         if force or not prompt_user or ask_user('{0} exists, delete it? [Y/a/n]'.format(path)):
-            if op.isfile(path) or op.islink(path): os.remove(path)
+            if op.isfile(path) or op.islink(path):
+
+                try:
+                   os.remove(path)
+                except Exception as e:
+                    if e.errno == errno.EACCES or e.errno.EPERM:
+                        check_sudo('About to delete %s' % path)
+                        remove_path(path)
             else: shutil.rmtree(path)
             return True
         else: return False
