@@ -199,7 +199,7 @@ def main():
     if args.backup or args.sync is not None and 'copy' in js:
         [run_command(command) for command in js['before_bak']]
         [copypath(src, dst, backup=True) for dst, src in js['copy'].items() if dst[0] != '_' and src[0] != '_']
-    if args.restore and 'copy' in js:
+    if args.restore:
         check_sudo()
         if 'install' in js and 'install_cmd' in js:
             for c in js['install']:
