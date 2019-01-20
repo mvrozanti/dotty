@@ -123,8 +123,9 @@ def copypath(src, dst, backup=False):
             if e.errno == errno.EPERM or e.errno == errno.EACCES:
                 print(src, '->', dst)
                 subprocess.run(['sudo', 'cp', src, dst])
-            os.makedirs(op.dirname(dst))
-            shutil.copy(src, dst)
+            else:
+                os.makedirs(op.dirname(dst))
+                shutil.copy(src, dst)
     else:
         try: shutil.copytree(src, dst)
         except: pass
