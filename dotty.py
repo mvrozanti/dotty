@@ -122,9 +122,7 @@ def copypath(src, dst, backup=False):
         except Exception as e:
             if e.errno == errno.EPERM or e.errno == errno.EACCES:
                 print(src, '->', dst)
-                check_sudo()
-                copypath(src,dst,backup)
-            if e.errno not in [errno.ENOENT, errno.ENXIO]: raise
+                subprocess.run(['sudo', 'cp', src, dst])
             os.makedirs(op.dirname(dst))
             shutil.copy(src, dst)
     else:
@@ -139,13 +137,13 @@ def remove_path(path, force=False):
             return
         if force or not prompt_user or ask_user('{0} exists, delete it? [Y/a/n]'.format(path)):
             if op.isfile(path) or op.islink(path):
-
-                try:
-                   os.remove(path)
+                try: os.remove(path)
                 except Exception as e:
                     if e.errno == errno.EACCES or e.errno.EPERM:
-                        check_sudo('About to delete %s' % path)
-                        remove_path(path)
+                        print('About to delete %s' % path)
+                        subprocess.run(['sudo,','rm',path])
+                        # check_sudo('About to delete %s' % path)
+                        # remove_path(path) # not sure why this wont work; we have check_sudo
             else: shutil.rmtree(path)
             return True
         else: return False
