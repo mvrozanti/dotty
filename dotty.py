@@ -141,7 +141,7 @@ def remove_path(path, force=False):
                 except Exception as e:
                     if e.errno == errno.EACCES or e.errno.EPERM:
                         print('About to delete %s' % path)
-                        subprocess.run(['sudo,','rm',path])
+                        subprocess.run(['sudo','rm',path])
                         # check_sudo('About to delete %s' % path)
                         # remove_path(path) # not sure why this wont work; we have check_sudo
             else: shutil.rmtree(path)
