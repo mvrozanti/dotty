@@ -86,12 +86,12 @@ def create_symlink(src, dst):
         flags = 1 if op.isdir(src) else 0
         symlink(dst, src, flags)
 
-def copypath(src, dst, backup=False):
-    print(src, dst, backup)
+def copypath(src, dst, excluded=[], backup=False):
+    if op.basename(src) in excluded or op.basename(dst) in excluded: return
     dst = op.expanduser(dst) if not backup else op.abspath(dst)
     src = op.abspath(src) if not backup else op.expanduser(src)
     if '*' in src:
-#         if '*' in dst and backup:
+#        if '*' in dst and backup:
 #             result1 = ''
 #             result2 = ''
 #             globbed_src = None
@@ -130,9 +130,10 @@ def copypath(src, dst, backup=False):
         try: shutil.copytree(src, dst)
         except: pass
 
-def remove_path(path, force=False):
+def remove_path(path, excluded=[], force=False):
     try:
         path = op.abspath(path)
+        if op.basename(path) in excluded: return
         if dry_run:
             dry_run_events.append('remove: {0}'.format(path))
             return
@@ -178,14 +179,16 @@ def main():
     if args.config is None: raise Exception('JSON config file is missing, add it to this script\'s folder')
     js = json.load(open(args.config))
     chdir_dotfiles(args.config)
-    def clear_dotfiles(force=False):
+    excluded = js['excluded']
+    def clear_dotfiles(force=False, excluded=[]):
         if force or input('This is about to clear the dotfiles directory, are you sure you want to proceed? [y/N] ') == 'y':
             chdir_dotfiles(args.config)
             dotfiles_dir = op.dirname(args.config)
             for f in [op.abspath(f) for f in os.listdir(dotfiles_dir)]:
-                if not any(name in op.basename(f) for name in SAFE_NAMES): remove_path(op.abspath(f), force=force)
+                basename = op.basename(f)
+                if not any(name in basename for name in SAFE_NAMES) and not any(name in basename for name in excluded): remove_path(op.abspath(f), force=force)
         else: return
-    if args.clear_b or args.eject: clear_dotfiles(force=args.clear_b)
+    if args.clear_b or args.eject: clear_dotfiles(excluded=excluded, force=args.clear_b)
     if args.eject:
         op.chdir(origin_dir)
         if not op.exists(args.eject):
@@ -197,7 +200,7 @@ def main():
             for f in os.listdir(os.getcwd()): shutil.move(op.realpath(f), args.eject)
     if args.backup or args.sync is not None and 'copy' in js:
         [run_command(command) for command in js['before_bak']]
-        [copypath(src, dst, backup=True) for dst, src in js['copy'].items() if dst[0] != '_' and src[0] != '_']
+        [copypath(src, dst, excluded=excluded, backup=True) for dst, src in js['copy'].items() if dst[0] != '_' and src[0] != '_']
     if args.restore:
         check_sudo()
         if 'install' in js and 'install_cmd' in js:
@@ -206,7 +209,7 @@ def main():
         if 'commands' in js: [run_command(command) for command in js['commands'] if command[0] != '_']
         if 'mkdirs' in js: [create_directory(path) for path in js['mkdirs']]
         if 'link' in js: [create_symlink(src, dst) for src, dst in js['link'].items() if dst[0] != '_' and src[0] != '_']
-        if 'copy' in js: [copypath(src, dst) for src, dst in js['copy'].items() if dst[0] != '_' and src[0] != '_']
+        if 'copy' in js: [copypath(src, dst, excluded=excluded) for src, dst in js['copy'].items() if dst[0] != '_' and src[0] != '_']
         run_command('git submodule update')
     if args.sync is not None and 'copy' in js:
         chdir_dotfiles(args.config)
