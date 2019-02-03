@@ -114,10 +114,10 @@ def copypath(src, dst, excluded=[], backup=False):
         finally: return
     if op.exists(dst) and not remove_path(dst, force=backup): return
     if dry_run:
-        dry_run_events.append('would copy: %50s -> %s' % (src, dst))
+        dry_run_events.append('would copy: %-60s -> %s' % (src, dst))
         return
     if op.isfile(src):
-        if not dry_run: print("Copying %50s -> %s" % (src, dst))
+        if not dry_run: print("Copying %-60s -> %s" % (src, dst))
         try: shutil.copy(src, dst)
         except Exception as e:
             if e.errno == errno.EPERM or e.errno == errno.EACCES:
