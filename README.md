@@ -110,6 +110,11 @@ You're done!
             "zip -r ~/android-studio-config.zip ~/.AndroidStudio3.2/config/*"
         ],
 
+        "excluded": [
+            "password.gpg",
+            "*.gpg"
+        ],
+
         "commands": [
             "git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim && vim +PluginInstall +qall"
         ]
