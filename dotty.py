@@ -199,7 +199,7 @@ def main():
         if op.exists(args.eject) and op.isdir(args.eject):
             for f in os.listdir(os.getcwd()): shutil.move(op.realpath(f), args.eject)
     if args.backup or args.sync is not None and 'copy' in js:
-        [run_command(command) for command in js['before_bak']]
+        if 'before_bak' in js: [run_command(command) for command in js['before_bak']]
         [copypath(src, dst, excluded=excluded, backup=True) for dst, src in js['copy'].items() if dst[0] != '_' and src[0] != '_']
     if args.restore:
         check_sudo()
