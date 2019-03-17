@@ -37,6 +37,7 @@ You're done!
 - Link-following
 - Unix shell-style wildcards (globbing) in `copy` paths
 - Support for git submodules
+- [TODO] quash latest commits
 
 ### Parameters
 
