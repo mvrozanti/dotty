@@ -1,4 +1,7 @@
-## Dotty is a script for syncing and managing versions of your dotfiles.
+# Dotty 
+[![Build Status](https://travis-ci.org/mvrozanti/dotty.svg?branch=master)](https://travis-ci.org/mvrozanti/dotty) 
+
+Dotty is a script for syncing and managing versions of your dotfiles.
 
 ### Usage
 [![asciicast](https://asciinema.org/a/200410.png)](https://asciinema.org/a/200410)
