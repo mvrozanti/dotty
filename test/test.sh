@@ -1,3 +1,8 @@
+git config --global user.name "mvrozanti"
+git config --global user.email "mvrozanti@hotmail.com"
+git config --global user.password "$GITHUBPASS"
+git config --global push.default simple
+
 # create dummy files
 mkdir -p dummy-folder && echo dummy file contents > dummy-folder/dummy-file
 
@@ -34,7 +39,7 @@ cat >~/test-dotfiles-folder/dotty-test-config.json <<EOL
 }
 EOL
 
-./dotty/dotty.py -s "dummy-msg" || :
+./dotty/dotty.py -s "dummy-msg"
 
 [   -d ~/test-dotfiles-folder ]                                        || exit 2
 [   -f ~/test-dotfiles-folder/dotty-test-config.json ]                 || exit 3
