@@ -1,8 +1,3 @@
-git config --global user.name "mvrozanti"
-git config --global user.email "mvrozanti@hotmail.com"
-git config --global user.password "$GITHUBPASS"
-git config --global push.default simple
-
 # create dummy files
 mkdir -p dummy-folder && echo dummy file contents > dummy-folder/dummy-file
 
@@ -10,7 +5,9 @@ mkdir -p dummy-folder && echo dummy file contents > dummy-folder/dummy-file
 mkdir -p exclude-dummy-file-folder && cd $_ && echo $_ test > some-other.file && echo 1 > password.gpg
 
 mkdir -p ~/test-dotfiles-folder; cd $_
-git init && git submodule add https://github.com/mvrozanti/dotty && git submodule update --remote dotty
+git init 
+git submodule add https://github.com/mvrozanti/dotty 
+git submodule update --remote dotty
 
 cat >~/test-dotfiles-folder/dotty-test-config.json <<EOL
 {
@@ -39,17 +36,29 @@ cat >~/test-dotfiles-folder/dotty-test-config.json <<EOL
 }
 EOL
 
-./dotty/dotty.py -s "dummy-msg"
+./dotty/dotty.py -b
 
-[   -d ~/test-dotfiles-folder ]                                        || exit 2
-[   -f ~/test-dotfiles-folder/dotty-test-config.json ]                 || exit 3
+[   -d ~/test-dotfiles-folder/dummy-folder                           ] || exit 9
+[   -f ~/test-dotfiles-folder/dummy-folder/dummy-file                ] || exit 10
+
+git add .
+git commit -m "first commit"
+git remote add origin https://mvrozanti:"$GITHUBPASS"@github.com/mvrozanti/test.git
+git push -f -u origin master
+
+./dotty/dotty.py -s "second commit"
+
+find
+
+[   -d ~/test-dotfiles-folder                                        ] || exit 2
+[   -f ~/test-dotfiles-folder/dotty-test-config.json                 ] || exit 3
 [ ! -f ~/test-dotfiles-folder/exclude-dummy-file-folder/password.gpg ] || exit 4
-[ ! -f ~/commands_test_file ]                                          || exit 5
-[ ! -f ~/test-dotfiles-folder/password.gpg ]                           || exit 6
-[   -d ~/test-dotfiles-folder ]                                        || exit 7
+[ ! -f ~/commands_test_file                                          ] || exit 5
+[ ! -f ~/test-dotfiles-folder/password.gpg                           ] || exit 6
+[   -d ~/test-dotfiles-folder                                        ] || exit 7
 command -v vim                                                         || exit 8
 
-./dotty/dotty.py -r || :
+./dotty/dotty.py -r
 
 [   -d ~/.vim ]                                                        || exit 1
 
