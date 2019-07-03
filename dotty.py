@@ -14,7 +14,7 @@ import subprocess
 try: input = raw_input # Fix Python 2.x
 except NameError: pass
 
-SAFE_NAMES = ['dotty','.git', '.git', 'README', 'LICENSE', 'test'] # maybe this should be part of config?
+SAFE_NAMES = ['dotty','.git', '.gitignore', 'README', 'LICENSE', 'test'] # maybe this should be part of config?
 chdir_dotfiles = lambda config: os.chdir(op.dirname(config))
 prompt_user, dry_run = True, False
 dry_run_events = []
